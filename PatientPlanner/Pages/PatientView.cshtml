@@ -1,0 +1,197 @@
+﻿@page
+@model PatientPlanner.Pages.PatientViewModel
+@{
+    ViewData["Title"] = "Timetable";
+}
+
+<script language="JavaScript" type="text/javascript" src="~/js/HidePage.js?n=4"></script>
+<script language="JavaScript" type="text/javascript" src="~/js/CreateDevice.js?n=2"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+
+@Html.AntiForgeryToken()
+
+<input id="PushEndpoint" name="PushEndpoint" readonly required hidden />
+<input class="PushP256DH" name="PushP256DH" readonly required hidden />
+<input id="PushAuth" name="PushAuth" readonly required hidden />
+
+<div class="text-center">
+    <h1 class="display-4">Patients</h1>
+</div>
+
+<div id="add-patient-form" style="display: none;">
+    <form method="post">
+        <div>
+            <label for="task-name">Task Name</label>
+            <input name="taskName" id="task-name">
+        </div>
+        <input id="PatientID" name="patientID" value="@(Model.PatientID)" readonly required hidden />
+        <input id="PushAuth" name="startTime" hidden />
+        @* If start time is selected with no value in the end time
+        set the end time values to be start time + interval to end time*@
+        @* <div>
+        <label for="start-time">Start Time</label>
+        <select id="start-time" asp-items="@(new SelectList(Model.displayTimesList))">
+        <option value="">--Select a start time--</option>
+        </select>
+        </div> *@
+        @* If end time is selected with no value in the end time
+        set the start time values to be start time to end time - interval*@
+        <div>
+            <label>End Time</label>
+            <select id="end-time" asp-items="@(new SelectList(Model.displayTimesList))">
+                <option name="endTime" value="">--Select an end time--</option>
+            </select>
+        </div>
+        <div>
+            <label>Interval</label>
+            <select id="interval" asp-items="@(new SelectList(Model.intervalList))">
+                <option name="interval" value="">--Select an end time--</option>
+            </select>
+        </div>
+        <div>
+            <input type="submit" value="Add" class="btn btn-primary" />
+        </div>
+    </form>
+</div>
+
+@if (Model.Patients.Count > 0)
+{
+    <div class="d-sm-inline-flex justify-content-between">
+        <ul class="navbar-nav flex-row">
+            @foreach (var patient in Model.Patients)
+            {
+                <li class="nav-item">
+                    @* asp-page-handler defines the function that will handle the post.
+            asp-route-curr defines the variables and their corresponding name that will be sent to the function *@
+                    <form method="post" asp-page-handler="ChangeCurrentPatient" asp-route-curr="@patient.RoomNumber">
+                        <button class="btn">@patient.RoomNumber</button>
+                    </form>
+                </li>
+            }
+        </ul>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>@Html.DisplayFor(modelItem => Model.CurrentPatient.RoomNumber)</th>
+                <th></th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @* Loop over the time period *@
+            @foreach (var time in Model.times)
+            {
+                @* Gets the list of tasks for the patient for the specific time period *@
+                var newTaskList = Model.taskList.Where(t => t.DueTime == time);
+                var rowspanCount = 1;
+                if (newTaskList.Count() == 0)
+                {
+                    rowspanCount = 1;
+                    <tr>
+                        <td class="time-column">
+                            @Html.DisplayFor(modelItem => time)
+                        </td>
+                        <td time='@(time.ToString(@"hh\:mm"))' class="add">
+                            <svg style="color: blue" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                class="bi bi-plus" viewBox="0 0 20 20">
+                                <path
+                                    d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"
+                                    fill="blue">
+                                </path>
+                            </svg>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                }
+                else
+                {
+                    rowspanCount = newTaskList.Count();
+
+                    @for (int i = 0; i < newTaskList.Count(); i++)
+                    {
+                        <tr>
+                            @* Get the number of tasks in the current time period for the selected patient *@
+                            @if (i == 0)
+                            {
+                                <td rowspan="@rowspanCount" class="time-column">
+                                    @Html.DisplayFor(modelItem => time)
+                                </td>
+                                <td time='@(time.ToString(@"hh\:mm"))' class="add" rowspan="@rowspanCount">
+                                    <svg style="color: blue" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                        class="bi bi-plus" viewBox="0 0 16 16">
+                                        <path
+                                            d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"
+                                            fill="blue">
+                                        </path>
+                                    </svg>
+                                </td>
+                            }
+
+                            <td>
+                                <p style='display: inline-block; margin: 0px;'>@Html.DisplayFor(modelItem =>
+                    newTaskList.ToList()[i].TaskName)</p>
+                                <div
+                                    style='height: 20px; width: 20px; display: inline-block; background-color: @(newTaskList.ToList()[i].TaskColour)'>
+                                </div>
+                            </td>
+                            <td class="remove">
+                                <svg style="color: red" width="15" height="15" viewBox="0 0 15 15" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M11 8H4V7H11V8Z" fill="red"></path>
+                                </svg>
+                            </td>
+                        </tr>
+                    }
+                }
+
+            }
+
+        </tbody>
+    </table>
+}
+
+<script>
+    var startTimeIndex = 1;
+    var boxtime = "";
+
+    const boxes = document.querySelectorAll('.add');
+
+    boxes.forEach(box => {
+        box.addEventListener('click', function handleClick(event) {
+            var times = @Html.Raw(Json.Serialize(Model.displayTimesList));
+            boxtime = $(this).attr('time');
+            console.log($(this));
+            console.log(times);
+            startTimeIndex = times.indexOf(boxtime);
+            console.log('box clicked', event);
+
+            console.log(startTimeIndex);
+
+            times.splice(0, startTimeIndex + 1)
+
+            console.log(times);
+
+            var $el = $("#end-time");
+            $el.empty(); // remove old options
+            $el.append($("<option></option>")
+                .attr("value", "").text("--Select an end time--"));
+            $.each(times, function (key, value) {
+                $el.append($("<option></option>")
+                    .attr("value", value).text(value));
+            });
+
+            var pos = $(this).offset();
+            pos.left += 40;
+            console.log(pos.left);
+
+            const patientForm = document.getElementById("add-patient-form");
+            var rect = box.getBoundingClientRect();
+
+            $('#add-patient-form').show();
+            $('#add-patient-form').offset(pos);
+        });
+    });
+</script>

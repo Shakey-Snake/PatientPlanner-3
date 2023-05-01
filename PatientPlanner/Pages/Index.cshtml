@@ -1,0 +1,68 @@
+﻿@page
+@model IndexModel
+
+@{
+    ViewData["Title"] = "Timetable";
+}
+
+<script language="JavaScript" type="text/javascript" src="~/js/HidePage.js?n=4"></script>
+<script language="JavaScript" type="text/javascript" src="~/js/CreateDevice.js?n=2"></script>
+
+@Html.AntiForgeryToken()
+
+<input id="PushEndpoint" name="PushEndpoint" readonly required hidden />
+<input class="PushP256DH" name="PushP256DH" readonly required hidden />
+<input id="PushAuth" name="PushAuth" readonly required hidden />
+
+<div class="text-center">
+    <h1 class="display-4">Timetable</h1>
+</div>
+
+@if (Model.times.Count > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th></th>
+                @foreach (var item in Model.Patients)
+                {
+                    <th>
+                        @Html.DisplayFor(modelItem => item.RoomNumber)
+                    </th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @* Loop over the time period *@
+            @foreach (var time in Model.times)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => time)
+                    </td>
+                    @* Loop over the patients *@
+                    @foreach (var item in Model.Patients)
+                    {
+                        <td>
+                            @* Gets the list of tasks for the patient for the specific time period *@
+                            @{
+                                var taskList = Model.taskList.Where(t => t.DueTime == time && t.PatientID == item.PatientID);
+                            }
+
+                            @foreach (var task in taskList)
+                            {
+                                <a>
+                                    @Html.DisplayFor(modelItem => task.TaskName)
+                                    <div class="colour-square" style='background-color: @(task.TaskColour)'>
+
+                                    </div>
+                                </a>
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+
+        </tbody>
+    </table>
+}

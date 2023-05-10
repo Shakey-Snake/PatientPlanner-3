@@ -22,7 +22,7 @@ public class IndexModel : PageModel
     }
 
     public IList<Patient> Patients { get; set; } = default!;
-    public List<PatientTask> taskList { get; set; } = new List<PatientTask>();
+    public List<PatientDisplayTask> taskList { get; set; } = new List<PatientDisplayTask>();
     public SettingsProfile settingsProfile { get; set; } = default!;
     public List<TimeSpan> times { get; set; } = new List<TimeSpan>();
 
@@ -39,7 +39,7 @@ public class IndexModel : PageModel
 
             if (_context.Devices != null)
             {
-                Device device = _context.Devices.FirstOrDefault(device => device.PushEndpoint == endpoint);
+                Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == endpoint);
 
                 //Get a list of all of the devices patients
 
@@ -50,7 +50,7 @@ public class IndexModel : PageModel
 
                 foreach (Patient patient in Patients)
                 {
-                    taskList.AddRange(await _context.PatientTasks.Where(t => t.PatientID == patient.PatientID).ToListAsync());
+                    taskList.AddRange(await _context.PatientDisplayTasks.Where(t => t.PatientID == patient.PatientID).ToListAsync());
                 }
 
                 //Get the settings profile
@@ -93,13 +93,13 @@ public class IndexModel : PageModel
     public async Task<IActionResult> OnPostCheckSub(string PushEndpoint, string PushP256DH, string PushAuth)
     {
         Console.WriteLine("hello");
-        Device device = _context.Devices.FirstOrDefault(d => d.PushEndpoint == PushEndpoint);
+        Device device = _context.Devices.FirstOrDefault(d => d.PushP256DH == PushP256DH);
         Console.WriteLine(device);
 
         //set the session state
         if (device != null && string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
         {
-            HttpContext.Session.SetString(SessionEndPoint, PushEndpoint);
+            HttpContext.Session.SetString(SessionEndPoint, PushP256DH);
             Console.WriteLine("refresh");
             return new JsonResult("false");
         }
@@ -123,12 +123,20 @@ public class IndexModel : PageModel
 
             await _context.SaveChangesAsync();
 
-            var patientTasks = new PatientTask[]{
-                new PatientTask(1, "Task1", new TimeSpan(10, 0, 0), "#33DE14"),
-                new PatientTask(1, "Task2", new TimeSpan(10, 0, 0), "#DE2A14")
+            // Get the patient ID
+
+            var patientDisplayTasks = new PatientDisplayTask[]{
+                new PatientDisplayTask(1, "Task1", "#B05448", new TimeSpan(10, 0, 0), 111001101),
+                new PatientDisplayTask(1, "Task2", "#B05448", new TimeSpan(10, 0, 0), 111001111)
             };
 
-            _context.PatientTasks.AddRange(patientTasks);
+            var patientBasicTasks = new PatientTask[]{
+                new PatientTask(Device.ID, "Task1", "#B05448"),
+                new PatientTask(Device.ID, "Task2", "#B05448")
+            };
+
+            _context.PatientDisplayTasks.AddRange(patientDisplayTasks);
+            _context.PatientTasks.AddRange(patientBasicTasks);
 
             await _context.SaveChangesAsync();
 
@@ -138,7 +146,7 @@ public class IndexModel : PageModel
 
             await _context.SaveChangesAsync();
 
-            return new JsonResult("true");
+            return new JsonResult("false");
         }
 
         return new JsonResult("true");

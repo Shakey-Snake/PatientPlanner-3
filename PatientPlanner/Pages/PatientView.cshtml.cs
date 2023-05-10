@@ -22,9 +22,10 @@ namespace PatientPlanner.Pages
         public IList<Patient> Patients { get; set; } = new List<Patient>();
         public SettingsProfile settingsProfile { get; set; } = default!;
         public List<TimeSpan> times { get; set; } = new List<TimeSpan>();
+        public List<string> baseTaskList { get; set; } = new();
         public List<string> displayTimesList { get; set; } = new();
         public List<int> intervalList { get; set; } = new();
-        public List<PatientTask> taskList { get; set; } = new List<PatientTask>();
+        public List<PatientDisplayTask> taskList { get; set; } = new List<PatientDisplayTask>();
         public int PatientID = 0;
 
         public async Task OnGetAsync()
@@ -35,7 +36,7 @@ namespace PatientPlanner.Pages
                 var endpoint = HttpContext.Session.GetString(SessionEndPoint);
                 if (_context.Devices != null)
                 {
-                    Device device = _context.Devices.FirstOrDefault(device => device.PushEndpoint == endpoint);
+                    Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == endpoint);
 
                     if (_context.Patients != null)
                     {
@@ -53,7 +54,9 @@ namespace PatientPlanner.Pages
 
                     PatientID = CurrentPatient.PatientID;
 
-                    taskList.AddRange(await _context.PatientTasks.Where(t => t.PatientID == CurrentPatient.PatientID).ToListAsync());
+                    taskList.AddRange(await _context.PatientDisplayTasks.Where(t => t.PatientID == CurrentPatient.PatientID).ToListAsync());
+
+                    baseTaskList.AddRange(await _context.PatientTasks.Where(t => t.DeviceID == device.ID).Select(x => x.TaskName).ToListAsync());
 
                     //Get the settings profile
                     settingsProfile = _context.SettingsProfiles.FirstOrDefault(s => s.DeviceID == device.ID);
@@ -96,7 +99,7 @@ namespace PatientPlanner.Pages
 
                     int interval = settingsProfile.Interval;
                     int j = 0;
-                    // Create a list of intervals
+                    // Create a list of intervals using current interval
                     while (j < 240)
                     {
                         j += interval;
@@ -113,11 +116,64 @@ namespace PatientPlanner.Pages
             return RedirectToAction("Get");
         }
 
-        public IActionResult OnPostAddTask(int patientID, string taskName, string startTime, string endTime, string interval)
+        public async Task<IActionResult> OnPostAddTaskAsync(int patientID, string taskName, string startTime, string endTime, string interval)
         {
+            string taskColour = "";
+            string[] splitStartTime = startTime.Split(":");
+            TimeSpan newStartTime = new TimeSpan(int.Parse(splitStartTime[0]), int.Parse(splitStartTime[1]), 0);
 
-            PatientTask startPT = new PatientTask(patientID, taskName, startTime, "grey");
-            _context.Add()
+            Random rnd = new Random();
+            int groupNum = rnd.Next(1000000, 9999999);
+
+            var task = _context.PatientDisplayTasks.FirstOrDefault(s => s.GroupNumber == groupNum);
+
+            while (task != null)
+            {
+                groupNum = rnd.Next(1000000, 9999999);
+
+                task = _context.PatientDisplayTasks.FirstOrDefault(s => s.GroupNumber == groupNum);
+            }
+
+            // Get the device id from the passed in patientID
+
+            int deviceID = (_context.Patients.FirstOrDefault(p => p.PatientID == patientID)).DeviceID;
+
+            // Get the task colour by finding the task from basic task table
+
+            taskColour = (_context.PatientTasks.FirstOrDefault(s => s.TaskName == taskName && s.DeviceID == deviceID)).TaskColour;
+
+            // Create multiple tasks with the same group number
+
+            if (interval != null || endTime != null)
+            {
+                List<PatientDisplayTask> newPTs = new List<PatientDisplayTask>();
+                PatientDisplayTask newPT = new PatientDisplayTask(patientID, taskName, taskColour, newStartTime, groupNum);
+                newPTs.Add(newPT);
+
+                string[] splitEndTime = endTime.Split(":");
+                TimeSpan newEndTime = new TimeSpan(int.Parse(splitEndTime[0]), int.Parse(splitEndTime[1]), 0);
+
+                TimeSpan intervalSpan = new TimeSpan(0, int.Parse(interval), 0);
+
+                while (newStartTime.Add(intervalSpan) < newEndTime)
+                {
+                    newStartTime = newStartTime.Add(intervalSpan);
+                    newPT = new PatientDisplayTask(patientID, taskName, taskColour, newStartTime, groupNum);
+                    newPTs.Add(newPT);
+                }
+
+                _context.PatientDisplayTasks.AddRange(newPTs);
+            }
+            // Create one single instance of 
+            else
+            {
+                PatientDisplayTask newPT = new PatientDisplayTask(patientID, taskName, taskColour, newStartTime, groupNum);
+
+                _context.PatientDisplayTasks.Add(newPT);
+            }
+
+            await _context.SaveChangesAsync();
+
             return RedirectToAction("Get");
         }
     }

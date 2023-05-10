@@ -112,6 +112,7 @@ function subscribe() {
                         },
                         success: function(data) {
                             if (data == "false"){
+                                console.log("reload");
                                 location.reload();
                             }
                             console.log(data);

@@ -5,13 +5,13 @@ namespace PatientPlanner.Models
         public int PatientTaskID { get; set; }
         public string TaskName { get; set; }
         public string TaskColour { get; set; }
-        public int PatientID { get; set; }
+        public int DeviceID { get; set; }
 
-        public Patient Patient { get; set; }
+        public Device Device { get; set; }
 
-        public PatientTask(int PatientID, string TaskName, string TaskColour)
+        public PatientTask(int DeviceID, string TaskName, string TaskColour)
         {
-            this.PatientID = PatientID;
+            this.DeviceID = DeviceID;
             this.TaskName = TaskName;
             this.TaskColour = TaskColour;
         }

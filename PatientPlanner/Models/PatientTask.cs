@@ -1,6 +1,6 @@
 namespace PatientPlanner.Models
 {
-    public abstract class PatientTask
+    public class PatientTask
     {
         public int PatientTaskID { get; set; }
         public string TaskName { get; set; }
@@ -8,5 +8,12 @@ namespace PatientPlanner.Models
         public int PatientID { get; set; }
 
         public Patient Patient { get; set; }
+
+        public PatientTask(int PatientID, string TaskName, string TaskColour)
+        {
+            this.PatientID = PatientID;
+            this.TaskName = TaskName;
+            this.TaskColour = TaskColour;
+        }
     }
 }

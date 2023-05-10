@@ -17,12 +17,14 @@ namespace PatientPlanner.Data
         public DbSet<PatientPlanner.Models.Device> Devices { get; set; }
         public DbSet<PatientPlanner.Models.Patient> Patients { get; set; }
         public DbSet<PatientPlanner.Models.PatientTask> PatientTasks { get; set; }
+        public DbSet<PatientPlanner.Models.PatientDisplayTask> PatientDisplayTasks { get; set; }
         public DbSet<PatientPlanner.Models.SettingsProfile> SettingsProfiles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Device>().ToTable("Device");
             modelBuilder.Entity<Patient>().ToTable("Patient");
+            modelBuilder.Entity<PatientDisplayTask>().ToTable("PatientDisplayTask");
             modelBuilder.Entity<PatientTask>().ToTable("PatientTask");
             modelBuilder.Entity<SettingsProfile>().ToTable("SettingsProfile");
         }

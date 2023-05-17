@@ -32,3 +32,37 @@ body {
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
   background-color:white;
 }
+
+.time-period {
+  appearance: none;
+}
+
+#nav-patients {
+  list-style-type: none;
+  padding: 0;
+  overflow: auto;
+}
+
+#nav-patients li {
+  display: inline;
+  border-radius: 0px 7px 7px 0px;
+  border: 2px solid #dad0d0;
+  border-left: none;
+  padding: 0px 10px 0px 10px;
+  margin-left: -2px;
+}
+
+#nav-patients li:first-child {
+  border-radius: 7px;
+  border-left: 2px solid #dad0d0;
+  margin-left: 0px;
+}
+
+#nav-patients li:last-child:hover {
+  cursor: pointer;
+}
+
+#nav-patients li:last-child p {
+  margin-top: 4px;
+  margin-bottom: 0;
+}

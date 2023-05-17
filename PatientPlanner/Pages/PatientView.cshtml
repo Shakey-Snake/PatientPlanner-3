@@ -29,7 +29,7 @@
                 <option value="">--Select a task--</option>
             </select>
         </div>
-        <input id="patient-id" name="patientID" value="@(Model.PatientID)" readonly required />
+        <input id="patient-id" name="patientID" value="@(Model.PatientID)" readonly required hidden />
         <input id="start-time" name="startTime" hidden />
         @* If start time is selected with no value in the end time
         set the end time values to be start time + interval to end time*@
@@ -64,7 +64,7 @@
 @if (Model.Patients.Count > 0)
 {
     <div class="d-sm-inline-flex justify-content-between">
-        <ul class="navbar-nav flex-row">
+        <ul id="nav-patients" class="navbar-nav flex-row">
             @foreach (var patient in Model.Patients)
             {
                 <li class="nav-item">
@@ -75,6 +75,14 @@
                     </form>
                 </li>
             }
+            <li id="add-new-patient" class="nav-item">
+                <p id="show-patient-add">+</p>
+                <div style="display: none" id="text-add">
+                    <input id="add-patient-text" type="text">
+                    <button id="add-patient-button">Add</button>
+                </div>
+
+            </li>
         </ul>
     </div>
     <table class="table">
@@ -145,10 +153,12 @@
                     newTaskList.ToList()[i].TaskName)</p>
 
                             </td>
-                            <td class="remove">
-                                <svg style="color: red" width="15" height="15" viewBox="0 0 15 15" fill="none"
+                            @* TODO: Add id of task as an attribute relating to the task. *@
+                            <td taskid="@newTaskList.ToList()[i].PatientDisplayTaskID" class="remove">
+                                <svg style="color: red" width="30" height="25" viewBox="0 0 15 15" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M11 8H4V7H11V8Z" fill="red"></path>
+                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M11 8H4V7H11V8Z" fill="red">
+                                    </path>
                                 </svg>
                             </td>
                         </tr>
@@ -164,6 +174,7 @@
 <script>
     var startTimeIndex = 1;
     var boxtime = "";
+    var addNew = false;
 
     const boxes = document.querySelectorAll('.add');
 
@@ -206,6 +217,43 @@
         });
     });
 
+    const removeBoxes = document.querySelectorAll('.remove');
+    console.log(removeBoxes);
+
+    removeBoxes.forEach(box => {
+        box.addEventListener('click', function handleClick(event) {
+    @* Get the task id *@
+                let _taskid = $(this).attr("taskid");
+            console.log(_taskid);
+    @* Display a warning *@
+            if (confirm("Are you sure you want to remove this task?") == true) {
+                $.ajax({
+                    type: "POST",
+                    url: "/PatientView?handler=DeleteTask",
+                    data: {
+                        taskid: _taskid
+                    },
+                    headers: {
+                        RequestVerificationToken:
+                            $('input:hidden[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (data) {
+    @* update the table *@
+                        if (data == "false") {
+                            console.log("removed task");
+                            console.log("reload");
+                            location.reload();
+                        }
+                    },
+                    error: function () {
+                        alert('Error occured');
+                    }
+                });
+            }
+    @* if clicked remove the task and refresh the page *@
+        });
+    });
+
     $('#multiple-task-check').change(function () {
         if (this.checked) {
             $('.multiple').show();
@@ -221,4 +269,47 @@
         console.log("hide");
         $('#add-patient-form').hide();
     });
+
+    $('#add-new-patient').click(function () {
+        console.log("Show new patient");
+    @* get all children *@
+        if (addNew == false) {
+            $(this).children("#text-add").show();
+            $('#show-patient-add').hide();
+            addNew = true;
+        }
+    });
+
+    $('#add-patient-button').click(function () {
+    @* Get the roomNumber *@
+        var _roomNumber = $('#add-patient-text').val();
+        if (_roomNumber != null) {
+    @* Call a ajax query to add a new patient *@
+                $.ajax({
+                    type: "POST",
+                    url: "/PatientView?handler=AddPatient",
+                    data: {
+                        roomNumber: _roomNumber
+                    },
+                    headers: {
+                        RequestVerificationToken:
+                            $('input:hidden[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (data) {
+    @* update the table *@
+                        if (data == "false") {
+                            console.log("Added patient");
+                            console.log("reload");
+                            location.reload();
+                        }
+                    },
+                    error: function () {
+                        alert('Error occured');
+                    }
+                });
+            return;
+        }
+    });
+
+
 </script>

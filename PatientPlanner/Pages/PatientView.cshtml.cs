@@ -33,10 +33,10 @@ namespace PatientPlanner.Pages
             // Check for a session state, then get the device. Otherwise have automatic reminder for the user to refresh the page
             if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
             {
-                var endpoint = HttpContext.Session.GetString(SessionEndPoint);
+                var p256dh = HttpContext.Session.GetString(SessionEndPoint);
                 if (_context.Devices != null)
                 {
-                    Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == endpoint);
+                    Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == p256dh);
 
                     if (_context.Patients != null)
                     {
@@ -155,16 +155,18 @@ namespace PatientPlanner.Pages
 
                 TimeSpan intervalSpan = new TimeSpan(0, int.Parse(interval), 0);
 
+                //TODO: Needs some adjustments for tasks that end on the right intervals
                 while (newStartTime.Add(intervalSpan) < newEndTime)
                 {
                     newStartTime = newStartTime.Add(intervalSpan);
                     newPT = new PatientDisplayTask(patientID, taskName, taskColour, newStartTime, groupNum);
                     newPTs.Add(newPT);
                 }
+                // TODO CONT: Possibly add to list here
 
                 _context.PatientDisplayTasks.AddRange(newPTs);
             }
-            // Create one single instance of 
+            // Create one single instance of the task
             else
             {
                 PatientDisplayTask newPT = new PatientDisplayTask(patientID, taskName, taskColour, newStartTime, groupNum);
@@ -175,6 +177,51 @@ namespace PatientPlanner.Pages
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Get");
+        }
+
+        public async Task<IActionResult> OnPostAddPatient(string roomNumber)
+        {
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            {
+                var p256dh = HttpContext.Session.GetString(SessionEndPoint);
+                if (_context.Devices != null)
+                {
+                    Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == p256dh);
+                    Patient pateint = new Patient(device.ID, roomNumber);
+
+                    _context.Patients.Add(pateint);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            Console.WriteLine("refresh");
+            return new JsonResult("false");
+        }
+
+        public async Task<IActionResult> OnPostDeleteTask(string taskid)
+        {
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            {
+
+                var p256dh = HttpContext.Session.GetString(SessionEndPoint);
+                // check if the task belongs to the session for security
+                PatientDisplayTask task = _context.PatientDisplayTasks.FirstOrDefault(t => t.PatientDisplayTaskID == Int32.Parse(taskid));
+
+                if (task != null)
+                {
+
+                    Patient patient = _context.Patients.FirstOrDefault(p => p.PatientID == task.PatientID);
+                    Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == p256dh);
+
+                    if (patient != null && device != null && patient.DeviceID == device.ID)
+                    {
+                        // task exists for the current device therefore remove it.
+                        _context.PatientDisplayTasks.Remove(task);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
+            Console.WriteLine("refresh");
+            return new JsonResult("false");
         }
     }
 }

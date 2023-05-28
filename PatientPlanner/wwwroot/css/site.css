@@ -66,3 +66,13 @@ body {
   margin-top: 4px;
   margin-bottom: 0;
 }
+
+#settings-container {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+#panel-settings {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}

@@ -125,18 +125,26 @@ public class IndexModel : PageModel
 
             // Get the patient ID
 
-            var patientDisplayTasks = new PatientDisplayTask[]{
-                new PatientDisplayTask(1, "Task1", "#B05448", new TimeSpan(10, 0, 0), 111001101),
-                new PatientDisplayTask(1, "Task2", "#B05448", new TimeSpan(10, 0, 0), 111001111)
-            };
-
             var patientBasicTasks = new PatientTask[]{
                 new PatientTask(Device.ID, "Task1", "#B05448"),
                 new PatientTask(Device.ID, "Task2", "#B05448")
             };
 
-            _context.PatientDisplayTasks.AddRange(patientDisplayTasks);
             _context.PatientTasks.AddRange(patientBasicTasks);
+
+            await _context.SaveChangesAsync();
+
+            int task1ID = _context.PatientTasks.FirstOrDefault(pt => pt.TaskName == "Task1").PatientTaskID;
+            int task2ID = _context.PatientTasks.FirstOrDefault(pt => pt.TaskName == "Task2").PatientTaskID;
+
+            var patientDisplayTasks = new PatientDisplayTask[]{
+                new PatientDisplayTask(1, task1ID, "Task1", "#B05448", new TimeSpan(10, 0, 0), 111001101),
+                new PatientDisplayTask(1, task2ID, "Task2", "#B05448", new TimeSpan(10, 0, 0), 111001111)
+            };
+
+
+
+            _context.PatientDisplayTasks.AddRange(patientDisplayTasks);
 
             await _context.SaveChangesAsync();
 

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PatientPlanner.Models;
 
@@ -22,7 +23,8 @@ namespace PatientPlanner.Pages
         public IList<Patient> Patients { get; set; } = new List<Patient>();
         public SettingsProfile settingsProfile { get; set; } = default!;
         public List<TimeSpan> times { get; set; } = new List<TimeSpan>();
-        public List<string> baseTaskList { get; set; } = new();
+        public List<PatientTask> baseTaskList { get; set; } = new();
+        public SelectList Options { get; set; }
         public List<string> displayTimesList { get; set; } = new();
         public List<int> intervalList { get; set; } = new();
         public List<PatientDisplayTask> taskList { get; set; } = new List<PatientDisplayTask>();
@@ -56,7 +58,9 @@ namespace PatientPlanner.Pages
 
                     taskList.AddRange(await _context.PatientDisplayTasks.Where(t => t.PatientID == CurrentPatient.PatientID).ToListAsync());
 
-                    baseTaskList.AddRange(await _context.PatientTasks.Where(t => t.DeviceID == device.ID).Select(x => x.TaskName).ToListAsync());
+                    baseTaskList.AddRange(await _context.PatientTasks.Where(t => t.DeviceID == device.ID).ToListAsync());
+
+                    Options = new SelectList(baseTaskList, nameof(PatientTask.PatientTaskID), nameof(PatientTask.TaskName));
 
                     //Get the settings profile
                     settingsProfile = _context.SettingsProfiles.FirstOrDefault(s => s.DeviceID == device.ID);
@@ -116,9 +120,10 @@ namespace PatientPlanner.Pages
             return RedirectToAction("Get");
         }
 
-        public async Task<IActionResult> OnPostAddTaskAsync(int patientID, string taskName, string startTime, string endTime, string interval)
+        public async Task<IActionResult> OnPostAddTaskAsync(int patientID, int taskID, string startTime, string endTime, string interval)
         {
             string taskColour = "";
+            string taskName = "";
             string[] splitStartTime = startTime.Split(":");
             TimeSpan newStartTime = new TimeSpan(int.Parse(splitStartTime[0]), int.Parse(splitStartTime[1]), 0);
 
@@ -140,14 +145,18 @@ namespace PatientPlanner.Pages
 
             // Get the task colour by finding the task from basic task table
 
-            taskColour = (_context.PatientTasks.FirstOrDefault(s => s.TaskName == taskName && s.DeviceID == deviceID)).TaskColour;
+            PatientTask baseTask = _context.PatientTasks.FirstOrDefault(s => s.PatientTaskID == taskID && s.DeviceID == deviceID);
+
+            taskColour = baseTask.TaskColour;
+
+            taskName = baseTask.TaskName;
 
             // Create multiple tasks with the same group number
 
             if (interval != null || endTime != null)
             {
                 List<PatientDisplayTask> newPTs = new List<PatientDisplayTask>();
-                PatientDisplayTask newPT = new PatientDisplayTask(patientID, taskName, taskColour, newStartTime, groupNum);
+                PatientDisplayTask newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, newStartTime, groupNum);
                 newPTs.Add(newPT);
 
                 string[] splitEndTime = endTime.Split(":");
@@ -159,7 +168,7 @@ namespace PatientPlanner.Pages
                 while (newStartTime.Add(intervalSpan) < newEndTime)
                 {
                     newStartTime = newStartTime.Add(intervalSpan);
-                    newPT = new PatientDisplayTask(patientID, taskName, taskColour, newStartTime, groupNum);
+                    newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, newStartTime, groupNum);
                     newPTs.Add(newPT);
                 }
                 // TODO CONT: Possibly add to list here
@@ -169,7 +178,7 @@ namespace PatientPlanner.Pages
             // Create one single instance of the task
             else
             {
-                PatientDisplayTask newPT = new PatientDisplayTask(patientID, taskName, taskColour, newStartTime, groupNum);
+                PatientDisplayTask newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, newStartTime, groupNum);
 
                 _context.PatientDisplayTasks.Add(newPT);
             }
@@ -221,6 +230,29 @@ namespace PatientPlanner.Pages
                 }
             }
             Console.WriteLine("refresh");
+            return new JsonResult("false");
+        }
+
+        public async Task<IActionResult> OnPostSaveBaseTask(int taskid, string taskColour, string taskName)
+        {
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            {
+                // create the task, then remove the task in the database and re add it with the new attributes
+                PatientTask updateTask = _context.PatientTasks.FirstOrDefault(p => p.PatientTaskID == taskid);
+                // NOTE: entity becomes tracked therefore no need to use update query
+                updateTask.TaskColour = taskColour;
+                updateTask.TaskName = taskName;
+
+                // change all tasks in the display task table
+                List<PatientDisplayTask> changeDisplayTasks = new List<PatientDisplayTask>();
+                changeDisplayTasks.AddRange(await _context.PatientDisplayTasks.Where(pt => pt.PatientTaskID == updateTask.PatientTaskID).ToListAsync());
+
+                changeDisplayTasks.Select(pt => { pt.TaskName = taskName; pt.TaskColour = taskColour; return pt; }).ToList();
+
+                _context.PatientDisplayTasks.UpdateRange(changeDisplayTasks);
+
+                await _context.SaveChangesAsync();
+            }
             return new JsonResult("false");
         }
     }

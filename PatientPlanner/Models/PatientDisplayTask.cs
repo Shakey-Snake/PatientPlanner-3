@@ -8,12 +8,13 @@ namespace PatientPlanner.Models
         public TimeSpan DueTime { get; set; }
         public int GroupNumber { get; set; }
         public int PatientID { get; set; }
-
+        public int PatientTaskID { get; set; }
         public Patient Patient { get; set; }
 
-        public PatientDisplayTask(int PatientID, string TaskName, string TaskColour, TimeSpan DueTime, int GroupNumber)
+        public PatientDisplayTask(int PatientID, int PatientTaskID, string TaskName, string TaskColour, TimeSpan DueTime, int GroupNumber)
         {
             this.PatientID = PatientID;
+            this.PatientTaskID = PatientTaskID;
             this.TaskName = TaskName;
             this.DueTime = DueTime;
             this.TaskColour = TaskColour;

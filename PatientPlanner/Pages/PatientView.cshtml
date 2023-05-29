@@ -334,7 +334,6 @@
         });
     });
 
-
     const saveTaskButton = document.querySelectorAll('.save-task-button');
     console.log(saveTaskButton);
 
@@ -391,7 +390,57 @@
         });
     });
 
+    const deleteTaskButton = document.querySelectorAll('.delete-task-button');
+    console.log(deleteTaskButton);
 
+    deleteTaskButton.forEach(box => {
+        box.addEventListener('click', function handleClick(event) {
+    @* post everything to the server *@
+    @* get the table row *@
+        const buttonCell = $(this).parent();
+            const tableRow = buttonCell.parent();
+            console.log(tableRow);
+    @* step down and get the input of everything *@
+                let _taskid = tableRow.attr("id");
+
+            $.ajax({
+                type: "POST",
+                url: "/PatientView?handler=DeleteBaseTask",
+                data: {
+                    taskid: _taskid
+                },
+                headers: {
+                    RequestVerificationToken:
+                        $('input:hidden[name="__RequestVerificationToken"]').val()
+                },
+                success: function (data) {
+    @* update the table *@
+                        if (data == "false") {
+                        console.log("deleted task");
+                        console.log("reload");
+                        location.reload();
+                    }
+                },
+                error: function () {
+                    alert('Error occured');
+                }
+            });
+
+
+    @* this wont matter as the location is reloading, but keep incase we dont refresh page later on *@
+
+                buttonCell.children(".save-task-button").hide();
+            buttonCell.children(".delete-task-button").hide();
+            $(this).show();
+
+    @* show the text and colour box *@
+            const taskName = tableRow.children(".task-text");
+            const taskColour = tableRow.children(".task-colour");
+            taskName.children("#task-p").show();
+            taskName.children("#task-input").hide();
+            taskColour.children().prop("disabled", true);
+        });
+    });
 
 
     $('#multiple-task-check').change(function () {

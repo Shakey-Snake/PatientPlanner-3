@@ -237,7 +237,6 @@ namespace PatientPlanner.Pages
         {
             if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
             {
-                // create the task, then remove the task in the database and re add it with the new attributes
                 PatientTask updateTask = _context.PatientTasks.FirstOrDefault(p => p.PatientTaskID == taskid);
                 // NOTE: entity becomes tracked therefore no need to use update query
                 updateTask.TaskColour = taskColour;
@@ -255,5 +254,25 @@ namespace PatientPlanner.Pages
             }
             return new JsonResult("false");
         }
+
+        public async Task<IActionResult> OnPostDeleteBaseTask(int taskid)
+        {
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            {
+                // find the task, then remove it in the base task list
+                PatientTask deleteTask = _context.PatientTasks.FirstOrDefault(p => p.PatientTaskID == taskid);
+                _context.PatientTasks.Remove(deleteTask);
+
+                // find all display tasks and remove them
+                List<PatientDisplayTask> deleteDisplayTasks = new List<PatientDisplayTask>();
+                deleteDisplayTasks.AddRange(await _context.PatientDisplayTasks.Where(pt => pt.PatientTaskID == deleteTask.PatientTaskID).ToListAsync());
+                _context.PatientDisplayTasks.RemoveRange(deleteDisplayTasks);
+
+                await _context.SaveChangesAsync();
+            }
+            return new JsonResult("false");
+        }
+
+
     }
 }

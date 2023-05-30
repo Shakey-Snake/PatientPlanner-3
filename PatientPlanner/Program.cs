@@ -4,9 +4,6 @@ using PatientPlanner.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-
-
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddDbContext<TimetableContext>(options =>
@@ -19,7 +16,7 @@ builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromSeconds(10);
+    options.IdleTimeout = TimeSpan.FromSeconds(60);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });

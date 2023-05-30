@@ -273,6 +273,24 @@ namespace PatientPlanner.Pages
             return new JsonResult("false");
         }
 
+        public async Task<IActionResult> OnPostAddBaseTask(string taskName, string taskColour)
+        {
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            {
+                var p256dh = HttpContext.Session.GetString(SessionEndPoint);
+
+                if (_context.Devices != null)
+                {
+                    Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == p256dh);
+                    PatientTask task = new PatientTask(device.ID, taskName, taskColour);
+
+                    _context.PatientTasks.Add(task);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            return new JsonResult("false");
+        }
+
 
     }
 }

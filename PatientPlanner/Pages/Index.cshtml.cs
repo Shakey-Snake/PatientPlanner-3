@@ -58,6 +58,18 @@ public class IndexModel : PageModel
 
                 //Calculate the time period
 
+                // TODO: FIX
+                if (settingsProfile == null)
+                {
+                    SettingsProfile settings = new SettingsProfile(device.ID, 30, new TimeSpan(6, 0, 0), new TimeSpan(18, 0, 0));
+
+                    _context.SettingsProfiles.Add(settings);
+
+                    settingsProfile = settings;
+
+                    await _context.SaveChangesAsync();
+                }
+
                 times = new List<TimeSpan>();
 
                 if (settingsProfile.StartTime > settingsProfile.EndTime)
@@ -126,29 +138,33 @@ public class IndexModel : PageModel
             // Get the patient ID
 
             var patientBasicTasks = new PatientTask[]{
-                new PatientTask(Device.ID, "Task1", "#B05448"),
-                new PatientTask(Device.ID, "Task2", "#B05448")
+                new PatientTask(Device.ID, "OBS", "#2ECC71"),
+                new PatientTask(Device.ID, "Blood", "#C0392B"),
+                new PatientTask(Device.ID, "IV Med", "#641E16"),
+                new PatientTask(Device.ID, "Med", "#2980B9"),
+                new PatientTask(Device.ID, "Feed", "#D35400"),
+                new PatientTask(Device.ID, "Turn", "#17202A"),
+                new PatientTask(Device.ID, "BGL", "#0B5345"),
+                new PatientTask(Device.ID, "Document", "#424949")
             };
 
             _context.PatientTasks.AddRange(patientBasicTasks);
 
             await _context.SaveChangesAsync();
 
-            int task1ID = _context.PatientTasks.FirstOrDefault(pt => pt.TaskName == "Task1").PatientTaskID;
-            int task2ID = _context.PatientTasks.FirstOrDefault(pt => pt.TaskName == "Task2").PatientTaskID;
+            // PatientTask task1 = _context.PatientTasks.FirstOrDefault(pt => pt.TaskName == "Task1");
+            // PatientTask task2 = _context.PatientTasks.FirstOrDefault(pt => pt.TaskName == "Task2");
 
-            var patientDisplayTasks = new PatientDisplayTask[]{
-                new PatientDisplayTask(1, task1ID, "Task1", "#B05448", new TimeSpan(10, 0, 0), 111001101),
-                new PatientDisplayTask(1, task2ID, "Task2", "#B05448", new TimeSpan(10, 0, 0), 111001111)
-            };
+            // var patientDisplayTasks = new PatientDisplayTask[]{
+            //     new PatientDisplayTask(Device.ID, task1., "Task1", "#B05448", new TimeSpan(10, 0, 0), 111001101),
+            //     new PatientDisplayTask(Device.ID, task2., "Task2", "#B05448", new TimeSpan(10, 0, 0), 111001111)
+            // };
 
+            // _context.PatientDisplayTasks.AddRange(patientDisplayTasks);
 
+            // await _context.SaveChangesAsync();
 
-            _context.PatientDisplayTasks.AddRange(patientDisplayTasks);
-
-            await _context.SaveChangesAsync();
-
-            SettingsProfile settings = new SettingsProfile(1, Device.ID, 30, new TimeSpan(6, 0, 0), new TimeSpan(18, 0, 0));
+            SettingsProfile settings = new SettingsProfile(Device.ID, 30, new TimeSpan(6, 0, 0), new TimeSpan(18, 0, 0));
 
             _context.SettingsProfiles.Add(settings);
 

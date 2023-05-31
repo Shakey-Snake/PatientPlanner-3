@@ -11,9 +11,8 @@ namespace PatientPlanner.Models
 
         public Device Device { get; set; }
 
-        public SettingsProfile(int SettingsProfileID, int DeviceID, int Interval, TimeSpan StartTime, TimeSpan EndTime)
+        public SettingsProfile(int DeviceID, int Interval, TimeSpan StartTime, TimeSpan EndTime)
         {
-            this.SettingsProfileID = SettingsProfileID;
             this.DeviceID = DeviceID;
             this.Interval = Interval;
             this.StartTime = StartTime;

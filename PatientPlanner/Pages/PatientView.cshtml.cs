@@ -47,7 +47,7 @@ namespace PatientPlanner.Pages
 
                     if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionCurrentPatient)))
                     {
-                        CurrentPatient = _context.Patients.FirstOrDefault(p => p.RoomNumber == HttpContext.Session.GetString(SessionCurrentPatient));
+                        CurrentPatient = _context.Patients.FirstOrDefault(p => p.PatientID == Int32.Parse(HttpContext.Session.GetString(SessionCurrentPatient)));
                     }
                     else
                     {
@@ -282,7 +282,9 @@ namespace PatientPlanner.Pages
                 if (_context.Devices != null)
                 {
                     Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == p256dh);
-                    PatientTask task = new PatientTask(device.ID, taskName, taskColour);
+                    Patient patient = _context.Patients.FirstOrDefault(p => p.DeviceID == device.ID);
+
+                    PatientTask task = new PatientTask(patient.PatientID, taskName, taskColour);
 
                     _context.PatientTasks.Add(task);
                     await _context.SaveChangesAsync();
@@ -290,7 +292,5 @@ namespace PatientPlanner.Pages
             }
             return new JsonResult("false");
         }
-
-
     }
 }

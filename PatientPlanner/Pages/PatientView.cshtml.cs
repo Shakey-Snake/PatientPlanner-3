@@ -24,6 +24,8 @@ namespace PatientPlanner.Pages
         public SettingsProfile settingsProfile { get; set; } = default!;
         public List<TimeSpan> times { get; set; } = new List<TimeSpan>();
         public List<PatientTask> baseTaskList { get; set; } = new();
+        public SelectList SettingsTimes { get; set; }
+        public SelectList SettingsIntervalMinutes { get; set; }
         public SelectList Options { get; set; }
         public List<string> displayTimesList { get; set; } = new();
         public List<int> intervalList { get; set; } = new();
@@ -62,6 +64,47 @@ namespace PatientPlanner.Pages
 
                     Options = new SelectList(baseTaskList, nameof(PatientTask.PatientTaskID), nameof(PatientTask.TaskName));
 
+                    // NOTE: not the most beautiful answer
+                    SettingsTimes = new SelectList(
+                        new List<SelectListItem>{
+                            new SelectListItem { Text = "00:00", Value = "00:00"},
+                            new SelectListItem { Text = "01:00", Value = "01:00"},
+                            new SelectListItem { Text = "02:00", Value = "02:00"},
+                            new SelectListItem { Text = "03:00", Value = "03:00"},
+                            new SelectListItem { Text = "04:00", Value = "04:00"},
+                            new SelectListItem { Text = "05:00", Value = "05:00"},
+                            new SelectListItem { Text = "06:00", Value = "06:00"},
+                            new SelectListItem { Text = "07:00", Value = "07:00"},
+                            new SelectListItem { Text = "08:00", Value = "08:00"},
+                            new SelectListItem { Text = "09:00", Value = "09:00"},
+                            new SelectListItem { Text = "10:00", Value = "10:00"},
+                            new SelectListItem { Text = "11:00", Value = "11:00"},
+                            new SelectListItem { Text = "12:00", Value = "12:00"},
+                            new SelectListItem { Text = "13:00", Value = "13:00"},
+                            new SelectListItem { Text = "14:00", Value = "14:00"},
+                            new SelectListItem { Text = "15:00", Value = "15:00"},
+                            new SelectListItem { Text = "16:00", Value = "16:00"},
+                            new SelectListItem { Text = "17:00", Value = "17:00"},
+                            new SelectListItem { Text = "18:00", Value = "18:00"},
+                            new SelectListItem { Text = "19:00", Value = "19:00"},
+                            new SelectListItem { Text = "20:00", Value = "20:00"},
+                            new SelectListItem { Text = "21:00", Value = "21:00"},
+                            new SelectListItem { Text = "22:00", Value = "22:00"},
+                            new SelectListItem { Text = "23:00", Value = "23:00"},
+                        }, "Value", "Text"
+                    );
+
+                    SettingsIntervalMinutes = new SelectList(
+                        new List<SelectListItem>{
+                            new SelectListItem { Text = "00:05", Value = "5"},
+                            new SelectListItem { Text = "00:10", Value = "10"},
+                            new SelectListItem { Text = "00:20", Value = "20"},
+                            new SelectListItem { Text = "00:30", Value = "30"},
+                            new SelectListItem { Text = "1:00", Value = "60"},
+                            new SelectListItem { Text = "2:00", Value = "120"},
+                        }, "Value", "Text"
+                    );
+
                     //Get the settings profile
                     settingsProfile = _context.SettingsProfiles.FirstOrDefault(s => s.DeviceID == device.ID);
 
@@ -71,19 +114,19 @@ namespace PatientPlanner.Pages
 
                     if (settingsProfile.StartTime > settingsProfile.EndTime)
                     {
-                        var temp = settingsProfile.StartTime;
+                        var startTime = settingsProfile.StartTime;
                         var tempTime = new TimeSpan(24, 0, 0);
-                        while (temp < tempTime)
+                        while (startTime < tempTime)
                         {
-                            times.Add(temp);
-                            temp = temp.Add(new TimeSpan(0, settingsProfile.Interval, 0));
+                            times.Add(startTime);
+                            startTime = startTime.Add(new TimeSpan(0, settingsProfile.Interval, 0));
                         }
 
-                        temp = new TimeSpan(0, 0, 0);
-                        while (temp < settingsProfile.EndTime.Add(new TimeSpan(0, settingsProfile.Interval, 0)))
+                        tempTime = new TimeSpan(0, 0, 0);
+                        while (tempTime < settingsProfile.EndTime.Add(new TimeSpan(0, settingsProfile.Interval, 0)))
                         {
-                            times.Add(temp);
-                            temp = temp.Add(new TimeSpan(0, settingsProfile.Interval, 0));
+                            times.Add(tempTime);
+                            tempTime = tempTime.Add(new TimeSpan(0, settingsProfile.Interval, 0));
                         }
                     }
                     else
@@ -124,6 +167,7 @@ namespace PatientPlanner.Pages
         {
             string taskColour = "";
             string taskName = "";
+
             string[] splitStartTime = startTime.Split(":");
             TimeSpan newStartTime = new TimeSpan(int.Parse(splitStartTime[0]), int.Parse(splitStartTime[1]), 0);
 
@@ -155,23 +199,67 @@ namespace PatientPlanner.Pages
 
             if (interval != null || endTime != null)
             {
-                List<PatientDisplayTask> newPTs = new List<PatientDisplayTask>();
-                PatientDisplayTask newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, newStartTime, groupNum);
-                newPTs.Add(newPT);
-
                 string[] splitEndTime = endTime.Split(":");
                 TimeSpan newEndTime = new TimeSpan(int.Parse(splitEndTime[0]), int.Parse(splitEndTime[1]), 0);
 
                 TimeSpan intervalSpan = new TimeSpan(0, int.Parse(interval), 0);
 
-                //TODO: Needs some adjustments for tasks that end on the right intervals
-                while (newStartTime.Add(intervalSpan) < newEndTime)
+                // TODO: Add special case for if the startTime is greater than endTime
+                List<PatientDisplayTask> newPTs = new List<PatientDisplayTask>();
+                PatientDisplayTask newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, newStartTime, groupNum);
+                newPTs.Add(newPT);
+
+
+                // TODO: Refactor the code for less temp variables to be used
+                if (newStartTime > newEndTime)
                 {
+                    var tempTime = new TimeSpan(24, 0, 0);
+                    while (newStartTime.Add(intervalSpan) < tempTime)
+                    {
+                        newStartTime = newStartTime.Add(intervalSpan);
+                        newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, newStartTime, groupNum);
+                        newPTs.Add(newPT);
+                    }
+
+                    tempTime = new TimeSpan(0, 0, 0);
+
                     newStartTime = newStartTime.Add(intervalSpan);
-                    newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, newStartTime, groupNum);
+                    newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, tempTime, groupNum);
                     newPTs.Add(newPT);
+
+                    while (tempTime.Add(intervalSpan) < newEndTime)
+                    {
+                        tempTime = tempTime.Add(intervalSpan);
+                        newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, tempTime, groupNum);
+                        newPTs.Add(newPT);
+                    }
+
+                    if (tempTime.Add(intervalSpan) == newEndTime)
+                    {
+                        tempTime = tempTime.Add(intervalSpan);
+                        newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, tempTime, groupNum);
+                        newPTs.Add(newPT);
+                    }
                 }
-                // TODO CONT: Possibly add to list here
+                else
+                {
+                    while (newStartTime.Add(intervalSpan) < newEndTime)
+                    {
+                        newStartTime = newStartTime.Add(intervalSpan);
+                        newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, newStartTime, groupNum);
+                        newPTs.Add(newPT);
+                    }
+
+                    if (newStartTime.Add(intervalSpan) == newEndTime)
+                    {
+                        newStartTime = newStartTime.Add(intervalSpan);
+                        newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, newStartTime, groupNum);
+                        newPTs.Add(newPT);
+                    }
+                }
+
+                //TODO: Needs some adjustments for tasks that end on the right intervals
+
 
                 _context.PatientDisplayTasks.AddRange(newPTs);
             }
@@ -290,6 +378,32 @@ namespace PatientPlanner.Pages
                     await _context.SaveChangesAsync();
                 }
             }
+            return new JsonResult("false");
+        }
+
+        // sets the start and end time
+        //NOTE: Need to add 
+        public async Task<IActionResult> OnPostSetTimes(string startTime, string endTime)
+        {
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            {
+                var p256dh = HttpContext.Session.GetString(SessionEndPoint);
+                if (_context.Devices != null)
+                {
+
+                    Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == p256dh);
+                    SettingsProfile settings = _context.SettingsProfiles.FirstOrDefault(s => s.DeviceID == device.ID);
+
+                    string[] splitStartTime = startTime.Split(":");
+                    string[] splitEndTime = endTime.Split(":");
+
+                    settings.StartTime = new TimeSpan(Int32.Parse(splitStartTime[0]), Int32.Parse(splitStartTime[1]), 0);
+                    settings.EndTime = new TimeSpan(Int32.Parse(splitEndTime[0]), Int32.Parse(splitEndTime[1]), 0);
+
+                    await _context.SaveChangesAsync();
+                }
+            }
+            Console.WriteLine("refresh");
             return new JsonResult("false");
         }
     }

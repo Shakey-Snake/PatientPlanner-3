@@ -23,7 +23,7 @@
 <div class="settings-container">
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#panel-settings"
         aria-controls="panel-settings" aria-expanded="false" aria-label="Toggle navigation">
-        More settings <svg fill="#000000" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
+        Settings <svg fill="#000000" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
             xmlns:xlink="http://www.w3.org/1999/xlink" width="20px" height="20px" viewBox="0 0 45.973 45.973"
             xml:space="preserve">
             <g>
@@ -47,7 +47,51 @@
     </button>
     <div id="panel-settings" class="collapse w-100">
         <div class="card card-body">
+            <div id="time-control">
+                <h2>Time Control</h2>
+                <table id="time-input">
+                    <tr>
+                        <td>
+                            <label>Start Time</label>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                            <label>End Time</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <select id="start-time-input" asp-items="@Model.SettingsTimes">
+                                <option value="">--Select a start time--</option>
+                            </select>
+                        </td>
+                        <td>
+                            <p>-</p>
+                        </td>
+                        <td>
+                            <select id="end-time-input" asp-items="@Model.SettingsTimes">
+                                <option value="">--Select an end time--</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+                <button id="time-apply">Apply</button>
+                <hr>
+                <div id="interval">
+                    <label>Interval Time</label>
+                    <p>The interval minutes between each hour</p>
+                    <select id="interval-input" asp-items="@Model.SettingsIntervalMinutes">
+                        <option value="">--Select an interval--</option>
+                    </select>
+                </div>
+                <br>
+                <button id="interval-apply">Apply</button>
+                <hr>
+            </div>
             @* display all tasks *@
+            <h2>Task Manager</h2>
+            <p>Add, edit and delete tasks</p>
             <table>
                 @foreach (var task in Model.baseTaskList)
                 {
@@ -550,6 +594,39 @@
     @* update the table *@
                         if (data == "false") {
                             console.log("Added patient");
+                            console.log("reload");
+                            location.reload();
+                        }
+                    },
+                    error: function () {
+                        alert('Error occured');
+                    }
+                });
+            return;
+        }
+    });
+
+    $('#time-apply').click(function () {
+    @* Get the roomNumber *@
+        var _startTime = $('#start-time-input').val();
+        var _endTime = $('#end-time-input').val();
+        if (_startTime != null && _endTime != null) {
+    @* Call a ajax query to add a new patient *@
+                $.ajax({
+                    type: "POST",
+                    url: "/PatientView?handler=SetTimes",
+                    data: {
+                        startTime: _startTime,
+                        endTime: _endTime
+                    },
+                    headers: {
+                        RequestVerificationToken:
+                            $('input:hidden[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (data) {
+    @* update the table *@
+                        if (data == "false") {
+                            console.log("start and end time set");
                             console.log("reload");
                             location.reload();
                         }

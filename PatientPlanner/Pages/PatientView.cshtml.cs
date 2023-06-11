@@ -234,6 +234,7 @@ namespace PatientPlanner.Pages
                         newPTs.Add(newPT);
                     }
 
+                    //TODO: repeated code can be refactored
                     if (tempTime.Add(intervalSpan) == newEndTime)
                     {
                         tempTime = tempTime.Add(intervalSpan);
@@ -250,6 +251,7 @@ namespace PatientPlanner.Pages
                         newPTs.Add(newPT);
                     }
 
+                    //TODO: repeated code can be refactored
                     if (newStartTime.Add(intervalSpan) == newEndTime)
                     {
                         newStartTime = newStartTime.Add(intervalSpan);
@@ -257,13 +259,8 @@ namespace PatientPlanner.Pages
                         newPTs.Add(newPT);
                     }
                 }
-
-                //TODO: Needs some adjustments for tasks that end on the right intervals
-
-
                 _context.PatientDisplayTasks.AddRange(newPTs);
             }
-            // Create one single instance of the task
             else
             {
                 PatientDisplayTask newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, newStartTime, groupNum);
@@ -382,7 +379,6 @@ namespace PatientPlanner.Pages
         }
 
         // sets the start and end time
-        //NOTE: Need to add 
         public async Task<IActionResult> OnPostSetTimes(string startTime, string endTime)
         {
             if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
@@ -399,6 +395,26 @@ namespace PatientPlanner.Pages
 
                     settings.StartTime = new TimeSpan(Int32.Parse(splitStartTime[0]), Int32.Parse(splitStartTime[1]), 0);
                     settings.EndTime = new TimeSpan(Int32.Parse(splitEndTime[0]), Int32.Parse(splitEndTime[1]), 0);
+
+                    await _context.SaveChangesAsync();
+                }
+            }
+            Console.WriteLine("refresh");
+            return new JsonResult("false");
+        }
+
+        public async Task<IActionResult> OnPostSetInterval(string interval)
+        {
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            {
+                var p256dh = HttpContext.Session.GetString(SessionEndPoint);
+                if (_context.Devices != null)
+                {
+
+                    Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == p256dh);
+                    SettingsProfile settings = _context.SettingsProfiles.FirstOrDefault(s => s.DeviceID == device.ID);
+
+                    settings.Interval = Int32.Parse(interval);
 
                     await _context.SaveChangesAsync();
                 }

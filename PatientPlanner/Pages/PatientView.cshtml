@@ -176,11 +176,17 @@
             @foreach (var patient in Model.Patients)
             {
                 <li class="nav-item">
+                    @* TODO: Change to AJAX for less calls to the database as the page can update locally*@
                     @* asp-page-handler defines the function that will handle the post.
             asp-route-curr defines the variables and their corresponding name that will be sent to the function *@
-                    <form method="post" asp-page-handler="ChangeCurrentPatient" asp-route-curr="@patient.PatientID">
+                    <form method="post" style="display:inline-block;" asp-page-handler="ChangeCurrentPatient"
+                        asp-route-curr="@patient.PatientID">
                         <button class="btn">@patient.RoomNumber</button>
                     </form>
+                    <input id="patient-room-number" style="display:none;" type="text" value="@patient.RoomNumber">
+                    <button id="edit-patient-button patient-btn" style="display:inline-block;">Edit</button>
+                    <button id="save-patient-button patient-btn" style="display:none;">Save</button>
+                    <button id="delete-patient-button patient-btn" style="display:none;">Delete</button>
                 </li>
             }
             <li id="add-new-patient" class="nav-item">
@@ -637,6 +643,87 @@
                 });
             return;
         }
+    });
+
+    $('#interval-apply').click(function () {
+    @* Get the roomNumber *@
+        var _interval = $('#interval-input').val();
+        if (_interval != null) {
+    @* Call a ajax query to add a new patient *@
+                $.ajax({
+                    type: "POST",
+                    url: "/PatientView?handler=SetInterval",
+                    data: {
+                        interval: _interval
+                    },
+                    headers: {
+                        RequestVerificationToken:
+                            $('input:hidden[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (data) {
+    @* update the table *@
+                        if (data == "false") {
+                            console.log("start and end time set");
+                            console.log("reload");
+                            location.reload();
+                        }
+                    },
+                    error: function () {
+                        alert('Error occured');
+                    }
+                });
+            return;
+        }
+    });
+
+    const editPatient = document.querySelectorAll('.delete-task-button');
+    console.log(deleteTaskButton);
+
+    editPatient.forEach(box => {
+        box.addEventListener('click', function handleClick(event) {
+    @* post everything to the server *@
+    @* get the table row *@
+        const buttonCell = $(this).parent();
+            const tableRow = buttonCell.parent();
+            console.log(tableRow);
+    @* step down and get the input of everything *@
+                let _taskid = tableRow.attr("id");
+
+            $.ajax({
+                type: "POST",
+                url: "/PatientView?handler=DeleteBaseTask",
+                data: {
+                    taskid: _taskid
+                },
+                headers: {
+                    RequestVerificationToken:
+                        $('input:hidden[name="__RequestVerificationToken"]').val()
+                },
+                success: function (data) {
+    @* update the table *@
+                        if (data == "false") {
+                        console.log("deleted task");
+                        console.log("reload");
+                        location.reload();
+                    }
+                },
+                error: function () {
+                    alert('Error occured');
+                }
+            });
+    @* this wont matter as the location is reloading, but keep incase we dont refresh page later on *@
+
+                buttonCell.children(".save-task-button").hide();
+            buttonCell.children(".delete-task-button").hide();
+            $(this).show();
+
+    @* show the text and colour box *@
+            const taskName = tableRow.children(".task-text");
+            const taskColour = tableRow.children(".task-colour");
+            taskName.children("#task-p").show();
+            taskName.children("#task-input").hide();
+            taskColour.children().prop("disabled", true);
+        });
     });
 
 

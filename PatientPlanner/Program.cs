@@ -1,12 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using PatientPlanner.Data;
+using PatientPlanner.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
-builder.Services.AddDbContext<TimetableContext>(options =>
+
+builder.Services.AddDbContextFactory<TimetableContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("TimetableContext")));
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -20,6 +22,8 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
+builder.Services.AddHostedService<TimedHostedService>();
 
 var app = builder.Build();
 

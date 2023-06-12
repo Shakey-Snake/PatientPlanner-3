@@ -422,5 +422,33 @@ namespace PatientPlanner.Pages
             Console.WriteLine("refresh");
             return new JsonResult("false");
         }
+
+        public async Task<IActionResult> OnPostSavePatient(int patientID, string patientRN)
+        {
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            {
+                Patient patient = _context.Patients.FirstOrDefault(p => p.PatientID == patientID);
+                // NOTE: entity becomes tracked therefore no need to use update query
+                patient.RoomNumber = patientRN;
+
+                await _context.SaveChangesAsync();
+            }
+            return new JsonResult("false");
+        }
+
+        public async Task<IActionResult> OnPostDeletePatient(int patientID)
+        {
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            {
+                Patient patient = _context.Patients.FirstOrDefault(p => p.PatientID == patientID);
+                // NOTE: entity becomes tracked therefore no need to use update query
+                if (patient != null)
+                {
+                    _context.Remove(patient);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            return new JsonResult("false");
+        }
     }
 }

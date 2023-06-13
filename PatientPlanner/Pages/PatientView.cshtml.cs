@@ -287,6 +287,10 @@ namespace PatientPlanner.Pages
 
                     _context.Patients.Add(pateint);
                     await _context.SaveChangesAsync();
+
+                    // sets the current patient session to the most recently added patient
+                    Patient recentPatient = _context.Patients.OrderBy(p => p.PatientID).LastOrDefault(p => p.DeviceID == device.ID);
+                    HttpContext.Session.SetString(SessionCurrentPatient, recentPatient.PatientID.ToString());
                 }
             }
             Console.WriteLine("refresh");

@@ -159,7 +159,7 @@
         </div>
         <div class="multiple" style="display: none;">
             <label>Interval</label>
-            <select id="interval" name="interval" asp-items="@(new SelectList(Model.intervalList))">
+            <select id="interval" name="interval" asp-items="@(Model.SettingsIntervalMinutesTask)">
                 <option value="">--Select an end time--</option>
             </select>
         </div>
@@ -169,37 +169,39 @@
     </form>
 </div>
 
-@if (Model.Patients.Count > 0)
-{
-    <div class="d-sm-inline-flex justify-content-between">
-        <ul id="nav-patients" class="navbar-nav flex-row">
-            @foreach (var patient in Model.Patients)
-            {
-                <li class="nav-item">
-                    @* TODO: Change to AJAX for less calls to the database as the page can update locally*@
-                    @* asp-page-handler defines the function that will handle the post.
-            asp-route-curr defines the variables and their corresponding name that will be sent to the function *@
-                    <form id="patient-change" method="post" style="display:inline-block;"
-                        asp-page-handler="ChangeCurrentPatient" asp-route-curr="@patient.PatientID">
-                        <button class="btn">@patient.RoomNumber</button>
-                    </form>
-                    <input id="patient-id" hidden value="@patient.PatientID">
-                    <input id="patient-room-number-input" style="display:none;" type="text" value="@patient.RoomNumber">
-                    <button class="edit-patient-button patient-btn" style="display:inline-block;">Edit</button>
-                    <button class="save-patient-button patient-btn" style="display:none;">Save</button>
-                    <button class="delete-patient-button patient-btn" style="display:none;">Delete</button>
-                </li>
-            }
-            <li id="add-new-patient" class="nav-item">
-                <p id="show-patient-add">+</p>
-                <div style="display: none" id="text-add">
-                    <input id="add-patient-text" type="text">
-                    <button id="add-patient-button">Add</button>
-                </div>
 
+<div class="d-sm-inline-flex justify-content-between">
+    <ul id="nav-patients" class="navbar-nav flex-row">
+        @foreach (var patient in Model.Patients)
+        {
+            <li class="nav-item">
+                @* TODO: Change to AJAX for less calls to the database as the page can update locally*@
+                @* asp-page-handler defines the function that will handle the post.
+            asp-route-curr defines the variables and their corresponding name that will be sent to the function *@
+                <form id="patient-change" method="post" style="display:inline-block;"
+                    asp-page-handler="ChangeCurrentPatient" asp-route-curr="@patient.PatientID">
+                    <button class="btn">@patient.RoomNumber</button>
+                </form>
+                <input id="patient-id" hidden value="@patient.PatientID">
+                <input id="patient-room-number-input" style="display:none;" type="text" value="@patient.RoomNumber">
+                <button class="edit-patient-button patient-btn" style="display:inline-block;">Edit</button>
+                <button class="save-patient-button patient-btn" style="display:none;">Save</button>
+                <button class="delete-patient-button patient-btn" style="display:none;">Delete</button>
             </li>
-        </ul>
-    </div>
+        }
+        <li id="add-new-patient" class="nav-item">
+            <p id="show-patient-add">+</p>
+            <div style="display: none" id="text-add">
+                <input id="add-patient-text" type="text">
+                <button id="add-patient-button">Add</button>
+            </div>
+
+        </li>
+    </ul>
+</div>
+
+@if (Model.Patients.Count() > 0)
+{
     <table class="table">
         <thead>
             <tr>
@@ -281,7 +283,6 @@
                 }
 
             }
-
         </tbody>
     </table>
 }
@@ -341,7 +342,7 @@
                 let _taskid = $(this).attr("taskid");
             console.log(_taskid);
     @* Display a warning *@
-            if (confirm("Are you sure you want to remove this task?") == true) {
+                if (confirm("Are you sure you want to remove this task?") == true) {
                 $.ajax({
                     type: "POST",
                     url: "/PatientView?handler=DeleteTask",
@@ -354,7 +355,7 @@
                     },
                     success: function (data) {
     @* update the table *@
-                        if (data == "false") {
+                            if (data == "false") {
                             console.log("removed task");
                             console.log("reload");
                             location.reload();
@@ -366,7 +367,7 @@
                 });
             }
     @* if clicked remove the task and refresh the page *@
-        });
+            });
     });
 
     const editTaskButton = document.querySelectorAll('.edit-task-button');
@@ -376,7 +377,7 @@
         box.addEventListener('click', function handleClick(event) {
     @* enable everything to be edited *@
     @* get the parent *@
-        const buttonCell = $(this).parent();
+            const buttonCell = $(this).parent();
             console.log(buttonCell);
 
     @* show the other buttons and hide edit*@
@@ -386,7 +387,7 @@
             $(this).hide();
 
     @* show the text and colour box *@
-            const tableRow = buttonCell.parent();
+                const tableRow = buttonCell.parent();
             console.log(tableRow);
             const taskName = tableRow.children(".task-text");
             const taskColour = tableRow.children(".task-colour");
@@ -403,7 +404,7 @@
         box.addEventListener('click', function handleClick(event) {
     @* post everything to the server *@
     @* get the table row *@
-        const buttonCell = $(this).parent();
+            const buttonCell = $(this).parent();
             const tableRow = buttonCell.parent();
             console.log(tableRow);
     @* step down and get the input of everything *@
@@ -425,7 +426,7 @@
                 },
                 success: function (data) {
     @* update the table *@
-                        if (data == "false") {
+                            if (data == "false") {
                         console.log("changed task");
                         console.log("reload");
                         location.reload();
@@ -444,7 +445,7 @@
             $(this).show();
 
     @* show the text and colour box *@
-            const taskName = tableRow.children(".task-text");
+                const taskName = tableRow.children(".task-text");
             const taskColour = tableRow.children(".task-colour");
             taskName.children("#task-p").show();
             taskName.children("#task-input").hide();
@@ -459,7 +460,7 @@
         box.addEventListener('click', function handleClick(event) {
     @* post everything to the server *@
     @* get the table row *@
-        const buttonCell = $(this).parent();
+            const buttonCell = $(this).parent();
             const tableRow = buttonCell.parent();
             console.log(tableRow);
     @* step down and get the input of everything *@
@@ -477,7 +478,7 @@
                 },
                 success: function (data) {
     @* update the table *@
-                        if (data == "false") {
+                            if (data == "false") {
                         console.log("deleted task");
                         console.log("reload");
                         location.reload();
@@ -496,7 +497,7 @@
             $(this).show();
 
     @* show the text and colour box *@
-            const taskName = tableRow.children(".task-text");
+                const taskName = tableRow.children(".task-text");
             const taskColour = tableRow.children(".task-colour");
             taskName.children("#task-p").show();
             taskName.children("#task-input").hide();
@@ -507,7 +508,7 @@
     $("#add-task-button").on('click', function handleClick(event) {
     @* post everything to the server *@
     @* get the table row *@
-        const buttonCell = $(this).parent();
+            const buttonCell = $(this).parent();
         const tableRow = buttonCell.parent();
         console.log(tableRow);
     @* step down and get the input of everything *@
@@ -529,7 +530,7 @@
             },
             success: function (data) {
     @* update the table *@
-                        if (data == "false") {
+                            if (data == "false") {
                     console.log("deleted task");
                     console.log("reload");
                     location.reload();
@@ -548,7 +549,7 @@
         $(this).show();
 
     @* show the text and colour box *@
-            const taskName = tableRow.children(".task-text");
+                const taskName = tableRow.children(".task-text");
         const taskColour = tableRow.children(".task-colour");
         taskName.children("#task-p").show();
         taskName.children("#task-input").hide();
@@ -575,7 +576,7 @@
     $('#add-new-patient').click(function () {
         console.log("Show new patient");
     @* get all children *@
-        if (addNew == false) {
+            if (addNew == false) {
             $(this).children("#text-add").show();
             $('#show-patient-add').hide();
             addNew = true;
@@ -584,7 +585,7 @@
 
     $('#add-patient-button').click(function () {
     @* Get the roomNumber *@
-        var _roomNumber = $('#add-patient-text').val();
+            var _roomNumber = $('#add-patient-text').val();
         if (_roomNumber != null) {
     @* Call a ajax query to add a new patient *@
                 $.ajax({
@@ -599,7 +600,7 @@
                     },
                     success: function (data) {
     @* update the table *@
-                        if (data == "false") {
+                            if (data == "false") {
                             console.log("Added patient");
                             console.log("reload");
                             location.reload();
@@ -615,7 +616,7 @@
 
     $('#time-apply').click(function () {
     @* Get the roomNumber *@
-        var _startTime = $('#start-time-input').val();
+            var _startTime = $('#start-time-input').val();
         var _endTime = $('#end-time-input').val();
         if (_startTime != null && _endTime != null) {
     @* Call a ajax query to add a new patient *@
@@ -632,7 +633,7 @@
                     },
                     success: function (data) {
     @* update the table *@
-                        if (data == "false") {
+                            if (data == "false") {
                             console.log("start and end time set");
                             console.log("reload");
                             location.reload();
@@ -648,7 +649,7 @@
 
     $('#interval-apply').click(function () {
     @* Get the roomNumber *@
-        var _interval = $('#interval-input').val();
+            var _interval = $('#interval-input').val();
         if (_interval != null) {
     @* Call a ajax query to add a new patient *@
                 $.ajax({
@@ -663,7 +664,7 @@
                     },
                     success: function (data) {
     @* update the table *@
-                        if (data == "false") {
+                            if (data == "false") {
                             console.log("start and end time set");
                             console.log("reload");
                             location.reload();

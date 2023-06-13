@@ -28,7 +28,7 @@ namespace PatientPlanner.Pages
         public SelectList SettingsIntervalMinutes { get; set; }
         public SelectList Options { get; set; }
         public List<string> displayTimesList { get; set; } = new();
-        public List<int> intervalList { get; set; } = new();
+        public SelectList SettingsIntervalMinutesTask { get; set; }
         public List<PatientDisplayTask> taskList { get; set; } = new List<PatientDisplayTask>();
         public int PatientID = 0;
 
@@ -45,20 +45,23 @@ namespace PatientPlanner.Pages
                     if (_context.Patients != null)
                     {
                         Patients = await _context.Patients.Where(p => p.DeviceID == device.ID).ToListAsync();
-                    }
 
-                    if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionCurrentPatient)))
-                    {
-                        CurrentPatient = _context.Patients.FirstOrDefault(p => p.PatientID == Int32.Parse(HttpContext.Session.GetString(SessionCurrentPatient)));
-                    }
-                    else
-                    {
-                        CurrentPatient = Patients[0];
-                    }
+                        if (Patients.Count() > 0)
+                        {
+                            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionCurrentPatient)))
+                            {
+                                CurrentPatient = _context.Patients.FirstOrDefault(p => p.PatientID == Int32.Parse(HttpContext.Session.GetString(SessionCurrentPatient)));
+                            }
+                            else
+                            {
+                                CurrentPatient = Patients[0];
+                            }
 
-                    PatientID = CurrentPatient.PatientID;
+                            PatientID = CurrentPatient.PatientID;
 
-                    taskList.AddRange(await _context.PatientDisplayTasks.Where(t => t.PatientID == CurrentPatient.PatientID).ToListAsync());
+                            taskList.AddRange(await _context.PatientDisplayTasks.Where(t => t.PatientID == CurrentPatient.PatientID).ToListAsync());
+                        }
+                    }
 
                     baseTaskList.AddRange(await _context.PatientTasks.Where(t => t.DeviceID == device.ID).ToListAsync());
 
@@ -66,7 +69,7 @@ namespace PatientPlanner.Pages
 
                     // NOTE: not the most beautiful answer
                     SettingsTimes = new SelectList(
-                        new List<SelectListItem>{
+                            new List<SelectListItem>{
                             new SelectListItem { Text = "00:00", Value = "00:00"},
                             new SelectListItem { Text = "01:00", Value = "01:00"},
                             new SelectListItem { Text = "02:00", Value = "02:00"},
@@ -91,17 +94,19 @@ namespace PatientPlanner.Pages
                             new SelectListItem { Text = "21:00", Value = "21:00"},
                             new SelectListItem { Text = "22:00", Value = "22:00"},
                             new SelectListItem { Text = "23:00", Value = "23:00"},
-                        }, "Value", "Text"
-                    );
+                            }, "Value", "Text"
+                        );
 
                     SettingsIntervalMinutes = new SelectList(
                         new List<SelectListItem>{
                             new SelectListItem { Text = "00:05", Value = "5"},
                             new SelectListItem { Text = "00:10", Value = "10"},
-                            new SelectListItem { Text = "00:20", Value = "20"},
+                            new SelectListItem { Text = "00:15", Value = "15"},
                             new SelectListItem { Text = "00:30", Value = "30"},
                             new SelectListItem { Text = "1:00", Value = "60"},
                             new SelectListItem { Text = "2:00", Value = "120"},
+                            new SelectListItem { Text = "3:00", Value = "180"},
+                            new SelectListItem { Text = "4:00", Value = "240"},
                         }, "Value", "Text"
                     );
 
@@ -144,14 +149,11 @@ namespace PatientPlanner.Pages
                         displayTimesList.Add(time.ToString(@"hh\:mm"));
                     }
 
-                    int interval = settingsProfile.Interval;
-                    int j = 0;
+                    SettingsIntervalMinutesTask = new SelectList(SettingsIntervalMinutes.Where(s => Int32.Parse(s.Value) >= settingsProfile.Interval), "Value", "Text");
+
                     // Create a list of intervals using current interval
-                    while (j < 240)
-                    {
-                        j += interval;
-                        intervalList.Add(j);
-                    }
+
+
                 }
             }
         }

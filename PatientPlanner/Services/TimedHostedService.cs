@@ -49,7 +49,14 @@ public class TimedHostedService : IHostedService, IDisposable
         using (TimetableContext dbContext = _contextFactory.CreateDbContext())
         {
             var deviceList = dbContext.Devices.ToList();
-            Dictionary<string, List<Payload>> devices = new Dictionary<string, List<Payload>>();
+            List<int> filteredDeviceIDs = new List<int>();
+
+            foreach (Device device in deviceList)
+            {
+                filteredDeviceIDs.Add(dbContext.SettingsProfiles.Where(s => s.DeviceID == device.ID && s.EnabledNotification == true).Select(s => s.DeviceID).FirstOrDefault());
+            }
+
+            deviceList = deviceList.Where(d => filteredDeviceIDs.Contains(d.ID)).ToList();
 
             foreach (Device device in deviceList)
             {
@@ -67,7 +74,7 @@ public class TimedHostedService : IHostedService, IDisposable
                     {
                         //Create the message string using the first elements for now
                         string message = "Patient " + patients.Find(p => p.PatientID == taskList[0].PatientID).RoomNumber +
-                            " has " + taskList[0].TaskName + " due now.";
+                            " has " + taskList[0].TaskName + " due now at " + taskList[0].DueTime.ToString("HH:mm");
 
                         var payload = new Payload
                         {
@@ -103,8 +110,9 @@ public class TimedHostedService : IHostedService, IDisposable
                     if (taskList.Count != 0)
                     {
                         //Create the message string using the first elements for now
+                        // TODO: test this
                         string message = "Patient " + patients.Find(p => p.PatientID == taskList[0].PatientID).RoomNumber +
-                            " was due " + taskList[0].TaskName + " something hours ago";
+                            " was due " + taskList[0].TaskName + DateTime.Now.TimeOfDay.Subtract(taskList[0].DueTime).ToString("HH:mm");
 
                         var payload = new Payload
                         {

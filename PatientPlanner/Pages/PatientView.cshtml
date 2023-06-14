@@ -47,6 +47,13 @@
     </button>
     <div id="panel-settings" class="collapse w-100">
         <div class="card card-body">
+            <div id="notifications-control">
+                <input type="checkbox" id="notifications-checkbox" />
+                <label for="notifications-checkbox">
+                    <h3>Enable notifications</h3>
+                </label>
+            </div>
+            <hr>
             <div id="time-control">
                 <h2>Time Control</h2>
                 <table id="time-input">
@@ -122,6 +129,7 @@
                     </td>
                 </tr>
             </table>
+            <button id="delete-all-tasks-button">Delete All</button>
         </div>
     </div>
 </div>
@@ -160,7 +168,7 @@
         <div class="multiple" style="display: none;">
             <label>Interval</label>
             <select id="interval" name="interval" asp-items="@(Model.SettingsIntervalMinutesTask)">
-                <option value="">--Select an end time--</option>
+                <option value="">--Select an interval--</option>
             </select>
         </div>
         <div>
@@ -582,7 +590,6 @@
     @* TODO: Reset the values of the select boxes for interval and end time to null *@
                 $('.multiple').hide();
         }
-        $('#textbox1').val(this.checked);
     });
 
     $('#add-patient-close').click(function () {
@@ -792,6 +799,69 @@
             buttonContainer.children("#patient-room-number-input").hide();
             $(this).hide();
 
+        });
+    });
+
+    $.ajax({
+        type: "GET",
+        url: "/PatientView?handler=Notifications",
+        headers: {
+            RequestVerificationToken:
+                $('input:hidden[name="__RequestVerificationToken"]').val()
+        },
+        success: function (data) {
+            console.log(data);
+            if (data == "True") {
+                console.log("notifications enabled");
+                $('#notifications-checkbox').prop('checked', true);
+            }
+            else if (data == "False") {
+                $('#notifications-checkbox').prop('checked', false);
+            }
+            else if (data == "SessionExpired") {
+                console.log("SessionExpired");
+            }
+        },
+        error: function () {
+            alert('Error occured');
+        }
+    });
+
+    $('#notifications-checkbox').change(function () {
+        if (this.checked) {
+            var returnVal = confirm("Are you sure you want to enable notifications?");
+            $(this).prop("checked", returnVal);
+
+        }
+        else {
+            var returnVal = confirm("Are you sure you want to disable notifications?");
+            if (returnVal) {
+                $(this).prop("checked", false);
+            }
+            else {
+                $(this).prop("checked", true);
+            }
+
+        }
+
+        $.ajax({
+            type: "POST",
+            url: "/PatientView?handler=EnableNotifications",
+            data: {
+                enabled: this.checked
+            },
+            headers: {
+                RequestVerificationToken:
+                    $('input:hidden[name="__RequestVerificationToken"]').val()
+            },
+            success: function (data) {
+                if (data == "SessionExpired") {
+                    console.log("SessionExpired");
+                }
+            },
+            error: function () {
+                alert('Error occured');
+            }
         });
     });
 

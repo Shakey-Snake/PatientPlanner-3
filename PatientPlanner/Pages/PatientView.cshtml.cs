@@ -198,11 +198,20 @@ namespace PatientPlanner.Pages
             taskName = baseTask.TaskName;
 
             // Create multiple tasks with the same group number
-
-            if (interval != null || endTime != null)
+            if (endTime == null)
             {
-                string[] splitEndTime = endTime.Split(":");
-                TimeSpan newEndTime = new TimeSpan(int.Parse(splitEndTime[0]), int.Parse(splitEndTime[1]), 0);
+                Console.WriteLine("null");
+            }
+
+
+            if (interval != null)
+            {
+                TimeSpan newEndTime = _context.SettingsProfiles.FirstOrDefault(s => s.DeviceID == deviceID).EndTime;
+                if (endTime != null)
+                {
+                    string[] splitEndTime = endTime.Split(":");
+                    newEndTime = new TimeSpan(int.Parse(splitEndTime[0]), int.Parse(splitEndTime[1]), 0);
+                }
 
                 TimeSpan intervalSpan = new TimeSpan(0, int.Parse(interval), 0);
 
@@ -455,6 +464,32 @@ namespace PatientPlanner.Pages
                 }
             }
             return new JsonResult("false");
+        }
+
+        public async Task<IActionResult> OnGetNotifications()
+        {
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            {
+                var p256dh = HttpContext.Session.GetString(SessionEndPoint);
+                Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == p256dh);
+                settingsProfile = _context.SettingsProfiles.FirstOrDefault(s => s.DeviceID == device.ID);
+                return new JsonResult(settingsProfile.EnabledNotification.ToString());
+            }
+            return new JsonResult("SessionExpired");
+        }
+
+        public async Task<IActionResult> OnPostEnableNotifications(bool enabled)
+        {
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            {
+                var p256dh = HttpContext.Session.GetString(SessionEndPoint);
+                Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == p256dh);
+                settingsProfile = _context.SettingsProfiles.FirstOrDefault(s => s.DeviceID == device.ID);
+                settingsProfile.EnabledNotification = enabled;
+                await _context.SaveChangesAsync();
+                return new JsonResult(settingsProfile.EnabledNotification.ToString());
+            }
+            return new JsonResult("SessionExpired");
         }
     }
 }

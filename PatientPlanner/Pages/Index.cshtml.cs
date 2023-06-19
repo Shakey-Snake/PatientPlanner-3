@@ -105,7 +105,6 @@ public class IndexModel : PageModel
 
     public async Task<IActionResult> OnPostCheckSub(string PushEndpoint, string PushP256DH, string PushAuth)
     {
-        Console.WriteLine("hello");
         Device device = _context.Devices.FirstOrDefault(d => d.PushP256DH == PushP256DH);
         Console.WriteLine(device);
 

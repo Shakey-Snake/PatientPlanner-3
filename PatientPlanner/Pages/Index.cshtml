@@ -6,13 +6,46 @@
 }
 
 <script language="JavaScript" type="text/javascript" src="~/js/HidePage.js?n=4"></script>
-<script language="JavaScript" type="text/javascript" src="~/js/CreateDevice.js?n=2"></script>
+<script language="JavaScript" type="text/javascript" src="~/js/CreateDevice.js?n=5"></script>
+<script language="JavaScript" type="text/javascript" src="~/js/site.js?n=4"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
 
 @Html.AntiForgeryToken()
 
 <input id="PushEndpoint" name="PushEndpoint" readonly required hidden />
 <input class="PushP256DH" name="PushP256DH" readonly required hidden />
 <input id="PushAuth" name="PushAuth" readonly required hidden />
+
+<div class="reminders">
+    <div id="no-support" class="critical-warning" style="display: none;">
+        <p>It looks like your browser doesn't support notifications, please use a different browser to enable notifications</p>
+    </div>
+
+    <div id="notifications-denied" class="critical-warning" style="display: none;">
+        <p id="notifications-denied-text" class="reminder-body">It looks like you have notifications disabled, please enable the notifications in page info next to the URL</p>
+    </div>
+
+    <div id="browser-notification-reminder" class="warning" style="display: none;">
+        <label for="browser-notifications-enable" class="reminder-body">You have notifications disabled for the browser, please click here to enable notifications</label>
+        <button id="browser-notifications-enable" class="btn btn-primary" onclick="enableBrowserNotifications()">Enable Notifications</button>
+    </div>
+    
+    <div id="site-notifications-reminder" class="warning" style="display: none;">
+        <label for="site-notifications-enable" class="reminder-body">You have notifications disabled, please enable them in the Shift and Task Settings on
+            the Patients Page or click here to enable notifications</label>
+        <button id="site-notifications-enable" class="btn btn-primary" onclick="enableSiteNotifications()">Enable Notifications</button>
+    </div>
+
+    <div id="session-warning" class="warning" style="display: none;">
+        <label for="site-session-reminder" class="reminder-body">Your session is about to time-out, please click here to refresh the session</label>
+        <button id="site-session-reminder" class="btn btn-primary" onclick="refreshPage()">Refresh</button>
+    </div>
+
+    <div id="session-timeout" class="critical-warning" style="display: none;">
+        <label for="site-session-reminder" class="reminder-body">Your session has timed-out, please click here to refresh to save future changes</label>
+        <button id="site-session-reminder" class="btn btn-primary" onclick="refreshPage()">Refresh</button>
+    </div>
+</div>
 
 <div class="text-center">
     <h1 class="display-4">Timetable</h1>
@@ -65,3 +98,10 @@
         </tbody>
     </table>
 }
+
+<script>
+    $(document).ready(function () {
+        //start the timer for the session timeout
+        initSessionMonitor();
+    });
+</script>

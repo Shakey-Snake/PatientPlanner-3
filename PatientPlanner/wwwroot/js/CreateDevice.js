@@ -9,17 +9,19 @@ window.onload = (event) =>{
         return;
     }
 
-    Notification.requestPermission().then(function (status) {
-        if (status === 'denied') {
-            $('#NoSupport').show();
-            errorHandler('[Notification.requestPermission] Browser denied permissions to notification api.');
-        } else if (status === 'granted') {
-            console.log('[Notification.requestPermission] Initializing service worker.');
-            initialiseServiceWorker();
-        }
-    });
-
-    subscribe();
+    if (Notification.permission == "default"){
+        $('#browser-notification-reminder').show();
+        errorHandler('[Notification.requestPermission] Browser denied permissions to notification api.');
+    }
+    else if (Notification.permission == "denied"){
+        $('#browser-notification-reminder').show();
+        errorHandler('[Notification.requestPermission] Browser denied permissions to notification api.');
+    }
+    else if (Notification.permission == "granted") {
+        console.log('[Notification.requestPermission] Initializing service worker.');
+        initialiseServiceWorker();
+        subscribe();
+    }
 };
 
 function initialiseServiceWorker() {
@@ -46,14 +48,14 @@ function handleSWRegistration(reg) {
 function initialiseState(reg) {
     // Are Notifications supported in the service worker?
     if (!(reg.showNotification)) {
-        $('#NoSupport').show();
+        $('.no-support').show();
         errorHandler('[initialiseState] Notifications aren\'t supported on service workers.');
         return;
     }
 
     // Check if push messaging is supported
     if (!('PushManager' in window)) {
-        $('#NoSupport').show();
+        $('.no-support').show();
         errorHandler('[initialiseState] Push messaging isn\'t supported.');
         return;
     }
@@ -145,8 +147,30 @@ function subscribe() {
     });
 }
 
-function showFeatures() {
+function enableBrowserNotifications() {
+    if (typeof applicationServerPublicKey === 'undefined') {
+        errorHandler('Vapid public key is undefined.');
+        return;
+    }
+
+    Notification.requestPermission().then(function (status) {
+        if (status === 'denied') {
+            $('#notifications-denied').show();
+            $('#browser-notification-reminder').hide();
+            errorHandler('[Notification.requestPermission] Browser denied permissions to notification api.');
+        } else if (status === 'granted') {
+            $('#browser-notification-reminder').hide();
+            console.log('[Notification.requestPermission] Initializing service worker.');
+            initialiseServiceWorker();
+            subscribe();
+        }
+    });
+
     
+}
+
+function enableSiteNotifications() {
+    subscribe();
 }
 
 function errorHandler(message, e) {

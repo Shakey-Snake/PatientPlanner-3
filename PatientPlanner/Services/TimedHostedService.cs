@@ -74,7 +74,7 @@ public class TimedHostedService : IHostedService, IDisposable
                     {
                         //Create the message string using the first elements for now
                         string message = "Patient " + patients.Find(p => p.PatientID == taskList[0].PatientID).RoomNumber +
-                            " has " + taskList[0].TaskName + " due now at " + taskList[0].DueTime.ToString("HH:mm");
+                            " has " + taskList[0].TaskName + " due now at " + taskList[0].DueTime.ToString(@"hh\:mm");
 
                         var payload = new Payload
                         {
@@ -111,8 +111,9 @@ public class TimedHostedService : IHostedService, IDisposable
                     {
                         //Create the message string using the first elements for now
                         // TODO: test this
+
                         string message = "Patient " + patients.Find(p => p.PatientID == taskList[0].PatientID).RoomNumber +
-                            " was due " + taskList[0].TaskName + DateTime.Now.TimeOfDay.Subtract(taskList[0].DueTime).ToString("HH:mm");
+                            " was due " + taskList[0].TaskName + " " + DateTime.Now.TimeOfDay.Subtract(taskList[0].DueTime).ToString(@"hh\:mm") + " hours ago";
 
                         var payload = new Payload
                         {

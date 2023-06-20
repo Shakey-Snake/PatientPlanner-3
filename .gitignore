@@ -2,3 +2,5 @@
 /PatientPlanner/obj
 /PatientPlanner/bin
 /PatientPlanner/PP.db
+/PatientPlanner/PP.db-shm
+/PatientPlanner/PP.db-wal

@@ -6,7 +6,7 @@
 }
 
 <script language="JavaScript" type="text/javascript" src="~/js/HidePage.js?n=4"></script>
-<script language="JavaScript" type="text/javascript" src="~/js/CreateDevice.js?n=5"></script>
+<script language="JavaScript" type="text/javascript" src="~/js/CreateDevice.js?n=6"></script>
 <script language="JavaScript" type="text/javascript" src="~/js/site.js?n=4"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
 
@@ -104,4 +104,63 @@
         //start the timer for the session timeout
         initSessionMonitor();
     });
+</script>
+
+<script type="module">
+    var applicationServerPublicKey = 'BKeF6SQHFZiUGYx2EO7VrkVYACUeYoWD3dkazCfXSS0cIfwRQqiCHXs5F-CilG7wY9JG2sjjFtTdWJmJ5-b2Pt8';
+    var serviceWorker = '/sw.js';
+    var isSubscribed = false;
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js'
+
+    // If you enabled Analytics in your project, add the Firebase SDK for Google Analytics
+    import { getMessaging } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging.js'
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDWIxMplVoH-3GGQ7YQWU76DIUhikVCtjo",
+        authDomain: "patientplanner-1d025.firebaseapp.com",
+        projectId: "patientplanner-1d025",
+        storageBucket: "patientplanner-1d025.appspot.com",
+        messagingSenderId: "162531664373",
+        appId: "1:162531664373:web:ddbe00353d9be2396c80bc"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+
+    // Initialize Firebase Cloud Messaging and get a reference to the service
+    const messaging = getMessaging(app);
+
+    window.onload = (event) =>{
+    // Application Server Public Key defined in Views/Device/Create.cshtml
+    if (typeof applicationServerPublicKey === 'undefined') {
+        console.log('Vapid public key is undefined.');
+        return;
+    }
+
+    if (Notification.permission == "default"){
+        $('#browser-notification-reminder').show();
+        console.log('[Notification.requestPermission] Browser denied permissions to notification api.');
+    }
+    else if (Notification.permission == "denied"){
+        $('#browser-notification-reminder').show();
+        console.log('[Notification.requestPermission] Browser denied permissions to notification api.');
+    }
+    else if (Notification.permission == "granted") {
+        // Add the public key generated from the console here.
+        getToken(messaging, {vapidKey: "BMjn0sGVG_L4BzjK9TdSlpXQGEv92Ccr6SQdsA-fDbNieO-hQb-hqdaVa6wvIdQOAcF2rWPNXeQDNOuNUhapx10" }).then((currentToken) => {
+            if (currentToken) {
+            // Send the token to your server and update the UI if necessary
+            console.log('[Notification.requestPermission] Initializing service worker.');
+            initialiseServiceWorker();
+            subscribe();
+            }
+            else {
+            // Show permission request UI
+            console.log('No registration token available. Request permission to generate one.');
+            }
+        }).catch((err) => {
+            console.log('An error occurred while retrieving token. ', err);
+        });
+    }
+};
 </script>

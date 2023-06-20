@@ -24,7 +24,7 @@ public static class NotificationService
         }
         catch (Exception exception)
         {
-
+            Console.WriteLine(exception.Message);
         }
     }
 }

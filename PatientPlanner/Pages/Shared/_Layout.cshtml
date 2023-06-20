@@ -48,6 +48,25 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js'
+
+        // If you enabled Analytics in your project, add the Firebase SDK for Google Analytics
+        import { getMessaging } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging.js'
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDWIxMplVoH-3GGQ7YQWU76DIUhikVCtjo",
+            authDomain: "patientplanner-1d025.firebaseapp.com",
+            projectId: "patientplanner-1d025",
+            storageBucket: "patientplanner-1d025.appspot.com",
+            messagingSenderId: "162531664373",
+            appId: "1:162531664373:web:ddbe00353d9be2396c80bc"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 

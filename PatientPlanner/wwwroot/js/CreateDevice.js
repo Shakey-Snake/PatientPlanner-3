@@ -1,4 +1,26 @@
-﻿var applicationServerPublicKey = 'BKeF6SQHFZiUGYx2EO7VrkVYACUeYoWD3dkazCfXSS0cIfwRQqiCHXs5F-CilG7wY9JG2sjjFtTdWJmJ5-b2Pt8';
+﻿// Import the functions you need from the SDKs you need
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+import firebase from 'firebase/compat/app';
+// const messaging = require('firebase/compat/messaging');
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDWIxMplVoH-3GGQ7YQWU76DIUhikVCtjo",
+  authDomain: "patientplanner-1d025.firebaseapp.com",
+  projectId: "patientplanner-1d025",
+  storageBucket: "patientplanner-1d025.appspot.com",
+  messagingSenderId: "162531664373",
+  appId: "1:162531664373:web:ddbe00353d9be2396c80bc"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+
+// Initialize Firebase Cloud Messaging and get a reference to the service
+const messaging = firebase.messaging();
+
+var applicationServerPublicKey = 'BKeF6SQHFZiUGYx2EO7VrkVYACUeYoWD3dkazCfXSS0cIfwRQqiCHXs5F-CilG7wY9JG2sjjFtTdWJmJ5-b2Pt8';
 var serviceWorker = '/sw.js';
 var isSubscribed = false;
 
@@ -18,9 +40,21 @@ window.onload = (event) =>{
         errorHandler('[Notification.requestPermission] Browser denied permissions to notification api.');
     }
     else if (Notification.permission == "granted") {
-        console.log('[Notification.requestPermission] Initializing service worker.');
-        initialiseServiceWorker();
-        subscribe();
+        // Add the public key generated from the console here.
+        getToken(messaging, {vapidKey: "BMjn0sGVG_L4BzjK9TdSlpXQGEv92Ccr6SQdsA-fDbNieO-hQb-hqdaVa6wvIdQOAcF2rWPNXeQDNOuNUhapx10" }).then((currentToken) => {
+            if (currentToken) {
+            // Send the token to your server and update the UI if necessary
+            console.log('[Notification.requestPermission] Initializing service worker.');
+            initialiseServiceWorker();
+            subscribe();
+            }
+            else {
+            // Show permission request UI
+            console.log('No registration token available. Request permission to generate one.');
+            }
+        }).catch((err) => {
+            console.log('An error occurred while retrieving token. ', err);
+        });
     }
 };
 

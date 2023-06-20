@@ -9,16 +9,18 @@ namespace PatientPlanner.Models
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }
         public bool EnabledNotification { get; set; }
+        public int TimezoneDiff { get; set; }
 
         public Device Device { get; set; }
 
-        public SettingsProfile(int DeviceID, int Interval, TimeSpan StartTime, TimeSpan EndTime, bool EnabledNotification)
+        public SettingsProfile(int DeviceID, int Interval, TimeSpan StartTime, TimeSpan EndTime, bool EnabledNotification, int TimezoneDiff)
         {
             this.DeviceID = DeviceID;
             this.Interval = Interval;
             this.StartTime = StartTime;
             this.EndTime = EndTime;
             this.EnabledNotification = EnabledNotification;
+            this.TimezoneDiff = TimezoneDiff;
         }
 
     }

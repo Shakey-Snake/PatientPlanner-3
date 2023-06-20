@@ -62,7 +62,7 @@ public class IndexModel : PageModel
                 // Note: Not sure what to fix here.
                 if (settingsProfile == null)
                 {
-                    SettingsProfile settings = new SettingsProfile(device.ID, 30, new TimeSpan(6, 0, 0), new TimeSpan(18, 0, 0), true);
+                    SettingsProfile settings = new SettingsProfile(device.ID, 30, new TimeSpan(6, 0, 0), new TimeSpan(18, 0, 0), true, 0);
 
                     _context.SettingsProfiles.Add(settings);
 
@@ -103,7 +103,7 @@ public class IndexModel : PageModel
         }
     }
 
-    public async Task<IActionResult> OnPostCheckSub(string PushEndpoint, string PushP256DH, string PushAuth)
+    public async Task<IActionResult> OnPostCheckSub(string PushEndpoint, string PushP256DH, string PushAuth, int TimeOffSet)
     {
         Device device = _context.Devices.FirstOrDefault(d => d.PushP256DH == PushP256DH);
         Console.WriteLine(device);
@@ -164,7 +164,7 @@ public class IndexModel : PageModel
 
             // await _context.SaveChangesAsync();
 
-            SettingsProfile settings = new SettingsProfile(Device.ID, 30, new TimeSpan(6, 0, 0), new TimeSpan(18, 0, 0), false);
+            SettingsProfile settings = new SettingsProfile(Device.ID, 30, new TimeSpan(6, 0, 0), new TimeSpan(18, 0, 0), false, TimeOffSet);
 
             _context.SettingsProfiles.Add(settings);
 

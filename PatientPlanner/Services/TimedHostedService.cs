@@ -17,6 +17,7 @@ public class TimedHostedService : IHostedService, IDisposable
     private readonly IConfiguration _configuration;
     private Timer? _alarmTimer = null;
     private Timer? _reminderTimer = null;
+    private TimeSpan localTime = DateTime.UtcNow.TimeOfDay;
 
     public TimedHostedService(IDbContextFactory<TimetableContext> contextFactory, ILogger<TimedHostedService> logger, IConfiguration configuration)
     {
@@ -36,7 +37,7 @@ public class TimedHostedService : IHostedService, IDisposable
             TimeSpan.FromMinutes(1));
 
         _reminderTimer = new Timer(SendReminderNotification, null, TimeSpan.Zero,
-            TimeSpan.FromMinutes(1));
+            TimeSpan.FromMinutes(10));
 
         return Task.CompletedTask;
     }
@@ -60,13 +61,37 @@ public class TimedHostedService : IHostedService, IDisposable
 
             foreach (Device device in deviceList)
             {
+                var settings = dbContext.SettingsProfiles.FirstOrDefault(s => s.DeviceID == device.ID);
                 var patients = dbContext.Patients.Where(p => p.DeviceID == device.ID).ToList();
+
+                localTime = DateTime.UtcNow.TimeOfDay;
+                _logger.LogInformation("local time: {localTime}", localTime);
+
+                var adjustedTime = new TimeSpan(0, 0, 0);
+
+                _logger.LogInformation("TimezoneDiff {TimezoneDiff}", settings.TimezoneDiff);
+
+                if (settings.TimezoneDiff < 0)
+                {
+                    adjustedTime = localTime.Subtract(new TimeSpan(0, Math.Abs(settings.TimezoneDiff), 0));
+                    if (adjustedTime < TimeSpan.Zero)
+                    {
+                        adjustedTime = new TimeSpan(24, 0, 0).Add(adjustedTime);
+                    }
+                }
+                else
+                {
+                    adjustedTime = new TimeSpan(0, settings.TimezoneDiff, 0).Add(localTime);
+                }
+
+                _logger.LogInformation("adjustedTime: {adjustedTime}", adjustedTime.Negate());
                 List<PatientDisplayTask> taskList = new List<PatientDisplayTask>();
                 if (type == " Alarm!")
                 {
                     foreach (Patient patient in patients)
                     {
-                        var pdt = dbContext.PatientDisplayTasks.ToList().Where(t => t.PatientID == patient.PatientID && t.DueTime.Hours == DateTime.Now.TimeOfDay.Hours && t.DueTime.Minutes == DateTime.Now.TimeOfDay.Minutes);
+
+                        var pdt = dbContext.PatientDisplayTasks.ToList().Where(t => t.PatientID == patient.PatientID && t.DueTime.Hours == adjustedTime.Hours && t.DueTime.Minutes == adjustedTime.Minutes);
                         taskList.AddRange(pdt);
                     }
 
@@ -91,15 +116,20 @@ public class TimedHostedService : IHostedService, IDisposable
                     foreach (Patient patient in patients)
                     {
 
-                        var pdt = dbContext.PatientDisplayTasks.ToList().Where(t => t.PatientID == patient.PatientID && t.DueTime >= DateTime.Now.TimeOfDay.Subtract(new TimeSpan(2, 0, 0))).ToList();
+                        // check for diff of 2 hours
+                        var pdt = dbContext.PatientDisplayTasks.ToList().Where(t => t.PatientID == patient.PatientID && t.DueTime >= adjustedTime.Subtract(new TimeSpan(2, 0, 0)) && t.DueTime < adjustedTime).ToList();
                         taskList.AddRange(pdt);
+
+                        _logger.LogInformation("adjustedTime: {adjustedTime}", adjustedTime.Subtract(new TimeSpan(2, 0, 0)));
+                        _logger.LogInformation("adjustedTime: {adjustedTime}", adjustedTime);
 
                         // check for night shift reminders
                         // EX: time is 1, minus 2 is 23, therefore it would be larger so it needs to check for night shifts aswell as regular
-                        if (DateTime.Now.TimeOfDay.Subtract(new TimeSpan(2, 0, 0)) > DateTime.Now.TimeOfDay)
+                        if (adjustedTime.Subtract(new TimeSpan(2, 0, 0)) > adjustedTime)
                         {
+                            _logger.LogInformation("nightshift");
                             // find the diff from now to 0
-                            var diff = new TimeSpan(0, 0, 0).Subtract(DateTime.Now.TimeOfDay);
+                            var diff = new TimeSpan(0, 0, 0).Subtract(adjustedTime);
                             // gives a value between 0 and 2, use this to find the upper limit of times
                             var upperTimeSpan = new TimeSpan(0, 0, 0).Subtract(diff);
                             pdt = dbContext.PatientDisplayTasks.Where(t => t.PatientID == patient.PatientID && t.DueTime >= upperTimeSpan).ToList();
@@ -113,7 +143,7 @@ public class TimedHostedService : IHostedService, IDisposable
                         // TODO: test this
 
                         string message = "Patient " + patients.Find(p => p.PatientID == taskList[0].PatientID).RoomNumber +
-                            " was due " + taskList[0].TaskName + " " + DateTime.Now.TimeOfDay.Subtract(taskList[0].DueTime).ToString(@"hh\:mm") + " hours ago";
+                            " was due " + taskList[0].TaskName + " " + adjustedTime.Subtract(taskList[0].DueTime).ToString(@"hh\:mm") + " hours ago";
 
                         var payload = new Payload
                         {

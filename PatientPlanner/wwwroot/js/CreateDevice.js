@@ -92,6 +92,9 @@ function subscribe() {
 
                 var p256dh = base64Encode(subscription.getKey('p256dh'));
                 var auth = base64Encode(subscription.getKey('auth'));
+                
+                var offSet = new Date().getTimezoneOffset();
+                console.log(offSet);
 
                 console.log(getCookie(subscription));
 
@@ -106,7 +109,8 @@ function subscribe() {
                         data: {
                             PushEndpoint: subscription.endpoint,
                             PushP256DH: p256dh,
-                            PushAuth: auth
+                            PushAuth: auth,
+                            TimeOffSet: offSet
                         },
                         headers: {
                             RequestVerificationToken: 

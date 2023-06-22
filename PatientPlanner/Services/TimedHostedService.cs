@@ -91,7 +91,7 @@ public class TimedHostedService : IHostedService, IDisposable
                     foreach (Patient patient in patients)
                     {
 
-                        var pdt = dbContext.PatientDisplayTasks.ToList().Where(t => t.PatientID == patient.PatientID && t.DueTime.Hours == adjustedTime.Hours && t.DueTime.Minutes == adjustedTime.Minutes);
+                        var pdt = dbContext.PatientDisplayTasks.ToList().Where(t => t.PatientID == patient.PatientID && t.DueTime.Hours == adjustedTime.Hours && t.DueTime.Minutes == adjustedTime.Minutes && t.Completed == false);
                         taskList.AddRange(pdt);
                     }
 
@@ -117,7 +117,7 @@ public class TimedHostedService : IHostedService, IDisposable
                     {
 
                         // check for diff of 2 hours
-                        var pdt = dbContext.PatientDisplayTasks.ToList().Where(t => t.PatientID == patient.PatientID && t.DueTime >= adjustedTime.Subtract(new TimeSpan(2, 0, 0)) && t.DueTime < adjustedTime).ToList();
+                        var pdt = dbContext.PatientDisplayTasks.ToList().Where(t => t.PatientID == patient.PatientID && t.DueTime >= adjustedTime.Subtract(new TimeSpan(2, 0, 0)) && t.DueTime < adjustedTime && t.Completed == false).ToList();
                         taskList.AddRange(pdt);
 
                         _logger.LogInformation("adjustedTime: {adjustedTime}", adjustedTime.Subtract(new TimeSpan(2, 0, 0)));

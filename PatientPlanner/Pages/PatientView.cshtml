@@ -17,31 +17,39 @@
 
 <div class="reminders">
     <div id="no-support" class="critical-warning" style="display: none;">
-        <p>It looks like your browser doesn't support notifications, please use a different browser to enable notifications</p>
+        <p>It looks like your browser doesn't support notifications, please use a different browser to enable
+            notifications</p>
     </div>
 
     <div id="notifications-denied" class="critical-warning" style="display: none;">
-        <p id="notifications-denied-text" class="reminder-body">It looks like you have notifications disabled, please enable the notifications in page info next to the URL</p>
+        <p id="notifications-denied-text" class="reminder-body">It looks like you have notifications disabled, please
+            enable the notifications in page info next to the URL</p>
     </div>
 
     <div id="browser-notification-reminder" class="warning" style="display: none;">
-        <label for="browser-notifications-enable" class="reminder-body">You have notifications disabled for the browser, please click here to enable notifications</label>
-        <button id="browser-notifications-enable" class="btn btn-primary" onclick="enableBrowserNotifications()">Enable Notifications</button>
+        <label for="browser-notifications-enable" class="reminder-body">You have notifications disabled for the browser,
+            please click here to enable notifications</label>
+        <button id="browser-notifications-enable" class="btn btn-primary" onclick="enableBrowserNotifications()">Enable
+            Notifications</button>
     </div>
-    
+
     <div id="site-notifications-reminder" class="warning" style="display: none;">
-        <label for="site-notifications-enable" class="reminder-body">You have notifications disabled, please enable them in the Shift and Task Settings on
+        <label for="site-notifications-enable" class="reminder-body">You have notifications disabled, please enable them
+            in the Shift and Task Settings on
             the Patients Page or click here to enable notifications</label>
-        <button id="site-notifications-enable" class="btn btn-primary" onclick="enableSiteNotifications()">Enable Notifications</button>
+        <button id="site-notifications-enable" class="btn btn-primary" onclick="enableSiteNotifications()">Enable
+            Notifications</button>
     </div>
 
     <div id="session-warning" class="warning" style="display: none;">
-        <label for="site-session-reminder" class="reminder-body">Your session is about to time-out, please click here to refresh the session</label>
+        <label for="site-session-reminder" class="reminder-body">Your session is about to time-out, please click here to
+            refresh the session</label>
         <button id="site-session-reminder" class="btn btn-primary" onclick="refreshPage()">Refresh</button>
     </div>
 
     <div id="session-timeout" class="critical-warning" style="display: none;">
-        <label for="site-session-reminder" class="reminder-body">Your session has timed-out, please click here to refresh to save future changes</label>
+        <label for="site-session-reminder" class="reminder-body">Your session has timed-out, please click here to
+            refresh to save future changes</label>
         <button id="site-session-reminder" class="btn btn-primary" onclick="refreshPage()">Refresh</button>
     </div>
 </div>
@@ -318,13 +326,13 @@
                                 </td>
                             }
 
-                            <td>
+                            <td taskid="@newTaskList.ToList()[i].PatientDisplayTaskID" class="task-column">
                                 <div
                                     style='height: 15px; width: 15px; display: inline-block; margin-bottom: -1px; background-color: @(newTaskList.ToList()[i].TaskColour)'>
                                 </div>
                                 <p style='display: inline-block; margin: 0px;'>@Html.DisplayFor(modelItem =>
                     newTaskList.ToList()[i].TaskName)</p>
-
+                                <input type="checkbox" class="mark-done" taskid="@newTaskList.ToList()[i].PatientDisplayTaskID">
                             </td>
                             @* TODO: Add id of task as an attribute relating to the task. *@
                             <td taskid="@newTaskList.ToList()[i].PatientDisplayTaskID" class="remove">
@@ -389,15 +397,9 @@
         });
     });
 
-    const removeBoxes = document.querySelectorAll('.remove');
-    console.log(removeBoxes);
-
-    removeBoxes.forEach(box => {
-        box.addEventListener('click', function handleClick(event) {
-    @* Get the task id *@
-                let _taskid = $(this).attr("taskid");
+    function removeDisplayTask(event) {
+            let _taskid = $(this).attr("taskid");
             console.log(_taskid);
-    @* Display a warning *@
                 if (confirm("Are you sure you want to remove this task?") == true) {
                 $.ajax({
                     type: "POST",
@@ -410,11 +412,37 @@
                             $('input:hidden[name="__RequestVerificationToken"]').val()
                     },
                     success: function (data) {
-    @* update the table *@
-                            if (data == "false") {
-                            console.log("removed task");
-                            console.log("reload");
-                            location.reload();
+                        if (data == "true") {
+                            // remove the td with the class task-column and remove
+                            let taskCell = $("[taskid=" + _taskid + "][class='task-column']");
+                            let removeCell = $("[taskid=" + _taskid + "][class='remove']");
+                            //check for other tasks in the row by selecting the tds with the class task-column
+                            let row = taskCell.parents("tr");
+                            console.log(row);
+                            console.log(row.children("td.time-column").length);
+                            while (row.children("td.time-column").length == 0) {
+                                row = row.prev();
+                            }
+                            console.log(row);
+                            let timeCell = row.children("td.time-column");
+                            let addCell = row.children("td.add");
+                            console.log(timeCell);
+                            if (timeCell.attr("rowspan") > 1) {
+                                timeCell.attr("rowspan", timeCell.attr("rowspan") - 1);
+                                taskCell.remove();
+                                removeCell.remove();
+                            }
+                            else {
+                                taskCell.remove();
+                                removeCell.remove();
+                                addCell.after('<td>');
+                                addCell.after('<td>');
+                            }
+                            console.log(timeCell);
+                        }
+                        else {
+                            console.log("failed to remove task");
+                            // show a warning?
                         }
                     },
                     error: function () {
@@ -422,6 +450,56 @@
                     }
                 });
             }
+        }
+
+    const removeBoxes = document.querySelectorAll('.remove');
+    removeBoxes.forEach(box => { box.addEventListener('click', removeDisplayTask)});
+
+    const markTask = document.querySelectorAll('.mark-done');
+    console.log(markTask);
+
+    markTask.forEach(box => {
+        box.addEventListener('click', function handleClick(event) {
+            if (this.checked) {
+                $(this).prop("checked", true);
+            }
+            else {
+                $(this).prop("checked", false);
+            }
+
+            console.log($(this).checked);
+
+    @* Get the task id *@
+                let _taskid = $(this).attr("taskid");
+            console.log(_taskid);
+    @* Display a warning *@
+                $.ajax({
+                    type: "POST",
+                    url: "/PatientView?handler=MarkTaskDone",
+                    data: {
+                        taskid: _taskid,
+                        done: this.checked
+                    },
+                    headers: {
+                        RequestVerificationToken:
+                            $('input:hidden[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (data) {
+                        if (data == "True") {
+                            console.log("notifications enabled");
+                            $(this).prop('checked', true);
+                        }
+                        else if (data == "False") {
+                            $('this').prop('checked', false);
+                        }
+                        else if (data == "SessionExpired") {
+                            console.log("SessionExpired");
+                        }
+                    },
+                    error: function () {
+                        alert('Error occured');
+                    }
+                });
     @* if clicked remove the task and refresh the page *@
             });
     });
@@ -862,7 +940,6 @@
         if (this.checked) {
             var returnVal = confirm("Are you sure you want to enable notifications?");
             $(this).prop("checked", returnVal);
-
         }
         else {
             var returnVal = confirm("Are you sure you want to disable notifications?");
@@ -872,7 +949,6 @@
             else {
                 $(this).prop("checked", true);
             }
-
         }
 
         $.ajax({

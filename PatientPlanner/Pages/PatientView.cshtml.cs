@@ -217,7 +217,7 @@ namespace PatientPlanner.Pages
 
                 // TODO: Add special case for if the startTime is greater than endTime
                 List<PatientDisplayTask> newPTs = new List<PatientDisplayTask>();
-                PatientDisplayTask newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, newStartTime, groupNum);
+                PatientDisplayTask newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, newStartTime, groupNum, false);
                 newPTs.Add(newPT);
 
 
@@ -228,20 +228,20 @@ namespace PatientPlanner.Pages
                     while (newStartTime.Add(intervalSpan) < tempTime)
                     {
                         newStartTime = newStartTime.Add(intervalSpan);
-                        newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, newStartTime, groupNum);
+                        newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, newStartTime, groupNum, false);
                         newPTs.Add(newPT);
                     }
 
                     tempTime = new TimeSpan(0, 0, 0);
 
                     newStartTime = newStartTime.Add(intervalSpan);
-                    newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, tempTime, groupNum);
+                    newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, tempTime, groupNum, false);
                     newPTs.Add(newPT);
 
                     while (tempTime.Add(intervalSpan) < newEndTime)
                     {
                         tempTime = tempTime.Add(intervalSpan);
-                        newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, tempTime, groupNum);
+                        newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, tempTime, groupNum, false);
                         newPTs.Add(newPT);
                     }
 
@@ -249,7 +249,7 @@ namespace PatientPlanner.Pages
                     if (tempTime.Add(intervalSpan) == newEndTime)
                     {
                         tempTime = tempTime.Add(intervalSpan);
-                        newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, tempTime, groupNum);
+                        newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, tempTime, groupNum, false);
                         newPTs.Add(newPT);
                     }
                 }
@@ -258,7 +258,7 @@ namespace PatientPlanner.Pages
                     while (newStartTime.Add(intervalSpan) < newEndTime)
                     {
                         newStartTime = newStartTime.Add(intervalSpan);
-                        newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, newStartTime, groupNum);
+                        newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, newStartTime, groupNum, false);
                         newPTs.Add(newPT);
                     }
 
@@ -266,7 +266,7 @@ namespace PatientPlanner.Pages
                     if (newStartTime.Add(intervalSpan) == newEndTime)
                     {
                         newStartTime = newStartTime.Add(intervalSpan);
-                        newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, newStartTime, groupNum);
+                        newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, newStartTime, groupNum, false);
                         newPTs.Add(newPT);
                     }
                 }
@@ -274,7 +274,7 @@ namespace PatientPlanner.Pages
             }
             else
             {
-                PatientDisplayTask newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, newStartTime, groupNum);
+                PatientDisplayTask newPT = new PatientDisplayTask(patientID, taskID, taskName, taskColour, newStartTime, groupNum, false);
 
                 _context.PatientDisplayTasks.Add(newPT);
             }
@@ -317,7 +317,6 @@ namespace PatientPlanner.Pages
 
                 if (task != null)
                 {
-
                     Patient patient = _context.Patients.FirstOrDefault(p => p.PatientID == task.PatientID);
                     Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == p256dh);
 
@@ -326,10 +325,10 @@ namespace PatientPlanner.Pages
                         // task exists for the current device therefore remove it.
                         _context.PatientDisplayTasks.Remove(task);
                         await _context.SaveChangesAsync();
+                        return new JsonResult("true");
                     }
                 }
             }
-            Console.WriteLine("refresh");
             return new JsonResult("false");
         }
 
@@ -488,6 +487,19 @@ namespace PatientPlanner.Pages
                 settingsProfile.EnabledNotification = enabled;
                 await _context.SaveChangesAsync();
                 return new JsonResult(settingsProfile.EnabledNotification.ToString());
+            }
+            return new JsonResult("SessionExpired");
+        }
+
+        public async Task<IActionResult> OnPostMarkTaskDone(int taskID, bool done)
+        {
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            {
+                var p256dh = HttpContext.Session.GetString(SessionEndPoint);
+                PatientDisplayTask task = _context.PatientDisplayTasks.FirstOrDefault(t => t.PatientDisplayTaskID == taskID);
+                task.Completed = done;
+                await _context.SaveChangesAsync();
+                return new JsonResult(done.ToString());
             }
             return new JsonResult("SessionExpired");
         }

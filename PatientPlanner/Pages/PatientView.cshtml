@@ -327,10 +327,10 @@
                             }
 
                             <td taskid="@newTaskList.ToList()[i].PatientDisplayTaskID" class="task-column">
-                                <div
+                                <div class="task-color-square"
                                     style='height: 15px; width: 15px; display: inline-block; margin-bottom: -1px; background-color: @(newTaskList.ToList()[i].TaskColour)'>
                                 </div>
-                                <p style='display: inline-block; margin: 0px;'>@Html.DisplayFor(modelItem =>
+                                <p class="task-p" style='display: inline-block; margin: 0px;'>@Html.DisplayFor(modelItem =>
                     newTaskList.ToList()[i].TaskName)</p>
                                 <input type="checkbox" class="mark-done" taskid="@newTaskList.ToList()[i].PatientDisplayTaskID">
                             </td>
@@ -398,62 +398,62 @@
     });
 
     function removeDisplayTask(event) {
-            let _taskid = $(this).attr("taskid");
-            console.log(_taskid);
-                if (confirm("Are you sure you want to remove this task?") == true) {
-                $.ajax({
-                    type: "POST",
-                    url: "/PatientView?handler=DeleteTask",
-                    data: {
-                        taskid: _taskid
-                    },
-                    headers: {
-                        RequestVerificationToken:
-                            $('input:hidden[name="__RequestVerificationToken"]').val()
-                    },
-                    success: function (data) {
-                        if (data == "true") {
-                            // remove the td with the class task-column and remove
-                            let taskCell = $("[taskid=" + _taskid + "][class='task-column']");
-                            let removeCell = $("[taskid=" + _taskid + "][class='remove']");
-                            //check for other tasks in the row by selecting the tds with the class task-column
-                            let row = taskCell.parents("tr");
-                            console.log(row);
-                            console.log(row.children("td.time-column").length);
-                            while (row.children("td.time-column").length == 0) {
-                                row = row.prev();
-                            }
-                            console.log(row);
-                            let timeCell = row.children("td.time-column");
-                            let addCell = row.children("td.add");
-                            console.log(timeCell);
-                            if (timeCell.attr("rowspan") > 1) {
-                                timeCell.attr("rowspan", timeCell.attr("rowspan") - 1);
-                                taskCell.remove();
-                                removeCell.remove();
-                            }
-                            else {
-                                taskCell.remove();
-                                removeCell.remove();
-                                addCell.after('<td>');
-                                addCell.after('<td>');
-                            }
-                            console.log(timeCell);
+        let _taskid = $(this).attr("taskid");
+        console.log(_taskid);
+        if (confirm("Are you sure you want to remove this task?") == true) {
+            $.ajax({
+                type: "POST",
+                url: "/PatientView?handler=DeleteTask",
+                data: {
+                    taskid: _taskid
+                },
+                headers: {
+                    RequestVerificationToken:
+                        $('input:hidden[name="__RequestVerificationToken"]').val()
+                },
+                success: function (data) {
+                    if (data == "true") {
+                        // remove the td with the class task-column and remove
+                        let taskCell = $("[taskid=" + _taskid + "][class='task-column']");
+                        let removeCell = $("[taskid=" + _taskid + "][class='remove']");
+                        //check for other tasks in the row by selecting the tds with the class task-column
+                        let row = taskCell.parents("tr");
+                        console.log(row);
+                        console.log(row.children("td.time-column").length);
+                        while (row.children("td.time-column").length == 0) {
+                            row = row.prev();
+                        }
+                        console.log(row);
+                        let timeCell = row.children("td.time-column");
+                        let addCell = row.children("td.add");
+                        console.log(timeCell);
+                        if (timeCell.attr("rowspan") > 1) {
+                            timeCell.attr("rowspan", timeCell.attr("rowspan") - 1);
+                            taskCell.remove();
+                            removeCell.remove();
                         }
                         else {
-                            console.log("failed to remove task");
-                            // show a warning?
+                            taskCell.remove();
+                            removeCell.remove();
+                            addCell.after('<td>');
+                            addCell.after('<td>');
                         }
-                    },
-                    error: function () {
-                        alert('Error occured');
+                        console.log(timeCell);
                     }
-                });
-            }
+                    else {
+                        console.log("failed to remove task");
+                        // show a warning?
+                    }
+                },
+                error: function () {
+                    alert('Error occured');
+                }
+            });
         }
+    }
 
     const removeBoxes = document.querySelectorAll('.remove');
-    removeBoxes.forEach(box => { box.addEventListener('click', removeDisplayTask)});
+    removeBoxes.forEach(box => { box.addEventListener('click', removeDisplayTask) });
 
     const markTask = document.querySelectorAll('.mark-done');
     console.log(markTask);
@@ -515,7 +515,6 @@
             console.log(buttonCell);
 
     @* show the other buttons and hide edit*@
-
                 buttonCell.children(".save-task-button").show();
             buttonCell.children(".delete-task-button").show();
             $(this).hide();
@@ -559,31 +558,42 @@
                         $('input:hidden[name="__RequestVerificationToken"]').val()
                 },
                 success: function (data) {
-    @* update the table *@
-                            if (data == "false") {
-                        console.log("changed task");
-                        console.log("reload");
-                        location.reload();
+                    console.log(data);
+                    if (data == "false") {
+                    }
+                    else {
+                        let tableBody = $('.table tbody');
+                        let tableRows = tableBody.find('tr');
+                        for (let i = 0; i < tableRows.length; i++) {
+                            if (tableRows[i].querySelector("td.task-column") != null && data.some(id => tableRows[i].querySelector("td.task-column").getAttribute("taskid") == id)) {
+                                let cell = tableRows[i].querySelector("td.task-column");
+                                console.log(cell);
+                                cell.querySelector(".task-color-square").style.backgroundColor = _taskColour;
+                                cell.querySelector(".task-p").innerText = _taskName;
+                            }
+                        }
+                        console.log(tableRows);
+                        console.log(tableBody);
+                        console.log("task changed")
+                        //TODO: also needs to update the task list in the add task panel
                     }
                 },
                 error: function () {
                     alert('Error occured');
                 }
             });
-
-
-    @* this wont matter as the location is reloading, but keep incase we dont refresh page later on *@
-
-                buttonCell.children(".save-task-button").hide();
+            buttonCell.children(".save-task-button").hide();
             buttonCell.children(".delete-task-button").hide();
-            $(this).show();
+            buttonCell.children(".edit-task-button").show();
 
-    @* show the text and colour box *@
-                const taskName = tableRow.children(".task-text");
+            const taskName = tableRow.children(".task-text");
             const taskColour = tableRow.children(".task-colour");
             taskName.children("#task-p").show();
+            taskName.children("#task-p").text(_taskName);
+            taskName.children("#task-input").val(_taskName);
             taskName.children("#task-input").hide();
             taskColour.children().prop("disabled", true);
+            taskColour.children().val(_taskColour);
         });
     });
 
@@ -611,31 +621,69 @@
                         $('input:hidden[name="__RequestVerificationToken"]').val()
                 },
                 success: function (data) {
-    @* update the table *@
-                            if (data == "false") {
-                        console.log("deleted task");
-                        console.log("reload");
-                        location.reload();
+                    console.log(data);
+                    if (data == "false") {
+                    }
+                    else {
+                        tableRow.remove();
+                        let tableBody = $('.table tbody');
+                        let tableRows = tableBody.find('tr');
+                        for (let i = 0; i < tableRows.length; i++) {
+                            if (tableRows[i].querySelector("td.task-column") != null && data.some(id => tableRows[i].querySelector("td.task-column").getAttribute("taskid") == id)) {
+                                // if this row has a time-column, check if the next row is a time-column
+                                if (tableRows[i].querySelector("td.time-column") != null) {
+                                    // console.log("table row has a time-column");
+                                    if (tableRows[i + 1].querySelector("td.time-column") != null) {
+                                        // console.log("next row has a time-column");
+                                        let td1 = document.createElement("td");
+                                        let td2 = document.createElement("td");
+                                        // remove the task and remove cells in the row
+                                        let addCell = tableRows[i].querySelector("td.add");
+                                        tableRows[i].querySelector("td.task-column").remove();
+                                        tableRows[i].querySelector("td.remove").remove();
+                                        addCell.after(td1);
+                                        addCell.after(td2);
+                                    }
+                                    else {
+                                        // no time-column after this means that the next row contains another task belonging to the same time
+                                        // get the 
+                                        let addCell = tableRows[i].querySelector("td.add");
+                                        tableRows[i].querySelector("td.task-column").remove();
+                                        tableRows[i].querySelector("td.remove").remove();
+
+                                        let oldRow = tableRows[i + 1];
+                                        while (oldRow.childNodes.length > 0) {
+                                            addCell.after(oldRow.childNodes[oldRow.childNodes.length - 1]);
+                                        }
+                                    }
+                                }
+                                else {
+                                    // find the row containing the time-column
+                                    let row = $(tableRows[i]);
+                                    while (row.children("td.time-column").length == 0) {
+                                        row = row.prev();
+                                    }
+                                    let timeCell = row.children("td.time-column");
+                                    let addCell = row.children("td.add");
+                                    if (timeCell.attr("rowspan") > 1) {
+                                        // console.log("adjust rowspan");
+                                        timeCell.attr("rowspan", timeCell.attr("rowspan") - 1);
+                                        addCell.attr("rowspan", addCell.attr("rowspan") - 1);
+                                        tableRows[i].remove();
+                                    }
+                                }
+                            }
+                        }
+                        // console.log(tableRows);
+                        // console.log(tableBody);
+                        // console.log("task changed")
                     }
                 },
                 error: function () {
                     alert('Error occured');
                 }
             });
-
-
-    @* this wont matter as the location is reloading, but keep incase we dont refresh page later on *@
-
-                buttonCell.children(".save-task-button").hide();
-            buttonCell.children(".delete-task-button").hide();
-            $(this).show();
-
-    @* show the text and colour box *@
-                const taskName = tableRow.children(".task-text");
-            const taskColour = tableRow.children(".task-colour");
-            taskName.children("#task-p").show();
-            taskName.children("#task-input").hide();
-            taskColour.children().prop("disabled", true);
+            //TODO: also needs to update the task list in the add task panel
         });
     });
 
@@ -682,10 +730,11 @@
         buttonCell.children(".delete-task-button").hide();
         $(this).show();
 
-    @* show the text and colour box *@
-                const taskName = tableRow.children(".task-text");
+        const taskName = tableRow.children(".task-text");
         const taskColour = tableRow.children(".task-colour");
         taskName.children("#task-p").show();
+        taskName.children("#task-p").val(_taskName);
+        taskName.children("#task-input").val(_taskName);
         taskName.children("#task-input").hide();
         taskColour.children().prop("disabled", true);
     });

@@ -350,6 +350,13 @@ namespace PatientPlanner.Pages
                 _context.PatientDisplayTasks.UpdateRange(changeDisplayTasks);
 
                 await _context.SaveChangesAsync();
+
+                // send a list of taskids to the client
+                List<string> taskids = new List<string>();
+                // taskids.Add("true");
+                taskids.AddRange(changeDisplayTasks.Select(pt => pt.PatientDisplayTaskID.ToString()));
+
+                return new JsonResult(taskids);
             }
             return new JsonResult("false");
         }
@@ -368,6 +375,13 @@ namespace PatientPlanner.Pages
                 _context.PatientDisplayTasks.RemoveRange(deleteDisplayTasks);
 
                 await _context.SaveChangesAsync();
+
+                // send a list of taskids to the client
+                List<string> taskids = new List<string>();
+                // taskids.Add("true");
+                taskids.AddRange(deleteDisplayTasks.Select(pt => pt.PatientDisplayTaskID.ToString()));
+
+                return new JsonResult(taskids);
             }
             return new JsonResult("false");
         }

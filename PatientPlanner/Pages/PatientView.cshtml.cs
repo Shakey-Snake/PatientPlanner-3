@@ -395,9 +395,8 @@ namespace PatientPlanner.Pages
                 if (_context.Devices != null)
                 {
                     Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == p256dh);
-                    Patient patient = _context.Patients.FirstOrDefault(p => p.DeviceID == device.ID);
 
-                    PatientTask task = new PatientTask(patient.PatientID, taskName, taskColour);
+                    PatientTask task = new PatientTask(device.ID, taskName, taskColour);
 
                     _context.PatientTasks.Add(task);
                     await _context.SaveChangesAsync();

@@ -332,7 +332,8 @@
                                 </div>
                                 <p class="task-p" style='display: inline-block; margin: 0px;'>@Html.DisplayFor(modelItem =>
                     newTaskList.ToList()[i].TaskName)</p>
-                                <input type="checkbox" class="mark-done" taskid="@newTaskList.ToList()[i].PatientDisplayTaskID">
+                                <input type="checkbox" class="mark-done" @(newTaskList.ToList()[i].Completed ? "checked=\"checked\"" :
+                    "") taskid="@newTaskList.ToList()[i].PatientDisplayTaskID">
                             </td>
                             @* TODO: Add id of task as an attribute relating to the task. *@
                             <td taskid="@newTaskList.ToList()[i].PatientDisplayTaskID" class="remove">
@@ -711,8 +712,7 @@
                     $('input:hidden[name="__RequestVerificationToken"]').val()
             },
             success: function (data) {
-    @* update the table *@
-                            if (data == "false") {
+                if (data == "false") {
                     console.log("deleted task");
                     console.log("reload");
                     location.reload();

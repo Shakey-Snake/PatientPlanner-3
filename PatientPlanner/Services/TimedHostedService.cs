@@ -85,37 +85,36 @@ public class TimedHostedService : IHostedService, IDisposable
                 }
 
                 _logger.LogInformation("adjustedTime: {adjustedTime}", adjustedTime.Negate());
-                List<PatientDisplayTask> taskList = new List<PatientDisplayTask>();
                 if (type == " Alarm!")
                 {
                     foreach (Patient patient in patients)
                     {
-
+                        List<PatientDisplayTask> taskList = new List<PatientDisplayTask>();
                         var pdt = dbContext.PatientDisplayTasks.ToList().Where(t => t.PatientID == patient.PatientID && t.DueTime.Hours == adjustedTime.Hours && t.DueTime.Minutes == adjustedTime.Minutes && t.Completed == false);
                         taskList.AddRange(pdt);
-                    }
 
-                    if (taskList.Count != 0)
-                    {
-                        //Create the message string using the first elements for now
-                        string message = "Patient " + patients.Find(p => p.PatientID == taskList[0].PatientID).RoomNumber +
-                            " has " + taskList[0].TaskName + " due now at " + taskList[0].DueTime.ToString(@"hh\:mm");
-
-                        var payload = new Payload
+                        if (taskList.Count != 0)
                         {
-                            title = "A patient requires attention",
-                            message = message
-                        };
+                            //Create the message string using the first elements for now
+                            string message = "Patient " + patients.Find(p => p.PatientID == taskList[0].PatientID).RoomNumber +
+                                " has " + taskList[0].TaskName + " due now at " + taskList[0].DueTime.ToString(@"hh\:mm");
 
-                        string payloadJsonString = JsonSerializer.Serialize(payload);
-                        NotificationService.Send(device, payloadJsonString, _configuration);
+                            var payload = new Payload
+                            {
+                                title = "A patient requires attention",
+                                message = message
+                            };
+
+                            string payloadJsonString = JsonSerializer.Serialize(payload);
+                            NotificationService.Send(device, payloadJsonString, _configuration);
+                        }
                     }
                 }
                 else
                 {
                     foreach (Patient patient in patients)
                     {
-
+                        List<PatientDisplayTask> taskList = new List<PatientDisplayTask>();
                         // check for diff of 2 hours
                         var pdt = dbContext.PatientDisplayTasks.ToList().Where(t => t.PatientID == patient.PatientID && t.DueTime >= adjustedTime.Subtract(new TimeSpan(2, 0, 0)) && t.DueTime < adjustedTime && t.Completed == false).ToList();
                         taskList.AddRange(pdt);
@@ -135,25 +134,27 @@ public class TimedHostedService : IHostedService, IDisposable
                             pdt = dbContext.PatientDisplayTasks.Where(t => t.PatientID == patient.PatientID && t.DueTime >= upperTimeSpan).ToList();
                             taskList.AddRange(pdt);
                         }
-                    }
 
-                    if (taskList.Count != 0)
-                    {
-                        //Create the message string using the first elements for now
-                        // TODO: test this
-
-                        string message = "Patient " + patients.Find(p => p.PatientID == taskList[0].PatientID).RoomNumber +
-                            " was due " + taskList[0].TaskName + " " + adjustedTime.Subtract(taskList[0].DueTime).ToString(@"hh\:mm") + " hours ago";
-
-                        var payload = new Payload
+                        if (taskList.Count != 0)
                         {
-                            title = "It looks like you missed a patient",
-                            message = message
-                        };
+                            //Create the message string using the first elements for now
+                            // TODO: test this
 
-                        string payloadJsonString = JsonSerializer.Serialize(payload);
-                        NotificationService.Send(device, payloadJsonString, _configuration);
+                            string message = "Patient " + patients.Find(p => p.PatientID == taskList[0].PatientID).RoomNumber +
+                                " was due " + taskList[0].TaskName + " " + adjustedTime.Subtract(taskList[0].DueTime).ToString(@"hh\:mm") + " hours ago at " + taskList[0].DueTime;
+
+                            var payload = new Payload
+                            {
+                                title = "It looks like you missed a patient",
+                                message = message
+                            };
+
+                            string payloadJsonString = JsonSerializer.Serialize(payload);
+                            NotificationService.Send(device, payloadJsonString, _configuration);
+                        }
                     }
+
+
                 }
 
                 // get the patient tasks

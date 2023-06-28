@@ -478,7 +478,7 @@ namespace PatientPlanner.Pages
             return new JsonResult("false");
         }
 
-        public async Task<IActionResult> OnGetNotifications()
+        public IActionResult OnGetNotifications()
         {
             if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
             {

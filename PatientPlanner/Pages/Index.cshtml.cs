@@ -103,6 +103,36 @@ public class IndexModel : PageModel
         }
     }
 
+    public async Task<IActionResult> OnGetTasks()
+    {
+        if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+        {
+            var endpoint = HttpContext.Session.GetString(SessionEndPoint);
+            if (_context.Devices != null)
+            {
+                Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == endpoint);
+
+                //Get a list of all of the devices patients
+
+                if (_context.Patients != null)
+                {
+                    Patients = await _context.Patients.Where(p => p.DeviceID == device.ID).ToListAsync();
+                }
+
+                foreach (Patient patient in Patients)
+                {
+                    taskList.AddRange(await _context.PatientDisplayTasks.Where(t => t.PatientID == patient.PatientID).ToListAsync());
+                }
+
+                if (taskList != null)
+                {
+                    return new JsonResult(taskList);
+                }
+            }
+        }
+        return new JsonResult("False");
+    }
+
     public async Task<IActionResult> OnPostCheckSub(string PushEndpoint, string PushP256DH, string PushAuth, int TimeOffSet)
     {
         Device device = _context.Devices.FirstOrDefault(d => d.PushP256DH == PushP256DH);

@@ -18,31 +18,39 @@
 
 <div class="reminders">
     <div id="no-support" class="critical-warning" style="display: none;">
-        <p>It looks like your browser doesn't support notifications, please use a different browser to enable notifications</p>
+        <p>It looks like your browser doesn't support notifications, please use a different browser to enable
+            notifications</p>
     </div>
 
     <div id="notifications-denied" class="critical-warning" style="display: none;">
-        <p id="notifications-denied-text" class="reminder-body">It looks like you have notifications blocked, please enable the notifications in page info next to the URL</p>
+        <p id="notifications-denied-text" class="reminder-body">It looks like you have notifications blocked, please
+            enable the notifications in page info next to the URL</p>
     </div>
 
     <div id="browser-notification-reminder" class="warning" style="display: none;">
-        <label for="browser-notifications-enable" class="reminder-body">You have notifications disabled for the browser, please click here to enable notifications</label>
-        <button id="browser-notifications-enable" class="btn btn-primary" onclick="enableBrowserNotifications()">Enable Notifications</button>
+        <label for="browser-notifications-enable" class="reminder-body">You have notifications disabled for the browser,
+            please click here to enable notifications</label>
+        <button id="browser-notifications-enable" class="btn btn-primary" onclick="enableBrowserNotifications()">Enable
+            Notifications</button>
     </div>
-    
+
     <div id="site-notifications-reminder" class="warning" style="display: none;">
-        <label for="site-notifications-enable" class="reminder-body">You have notifications disabled, please enable them in the Shift and Task Settings on
+        <label for="site-notifications-enable" class="reminder-body">You have notifications disabled, please enable them
+            in the Shift and Task Settings on
             the Patients Page or click here to enable notifications</label>
-        <button id="site-notifications-enable" class="btn btn-primary" onclick="enableSiteNotifications()">Enable Notifications</button>
+        <button id="site-notifications-enable" class="btn btn-primary" onclick="enableSiteNotifications()">Enable
+            Notifications</button>
     </div>
 
     <div id="session-warning" class="warning" style="display: none;">
-        <label for="site-session-reminder" class="reminder-body">Your session is about to time-out, please click here to refresh the session</label>
+        <label for="site-session-reminder" class="reminder-body">Your session is about to time-out, please click here to
+            refresh the session</label>
         <button id="site-session-reminder" class="btn btn-primary" onclick="refreshPage()">Refresh</button>
     </div>
 
     <div id="session-timeout" class="critical-warning" style="display: none;">
-        <label for="site-session-reminder" class="reminder-body">Your session has timed-out, please click here to refresh to save future changes</label>
+        <label for="site-session-reminder" class="reminder-body">Your session has timed-out, please click here to
+            refresh to save future changes</label>
         <button id="site-session-reminder" class="btn btn-primary" onclick="refreshPage()">Refresh</button>
     </div>
 </div>
@@ -53,55 +61,128 @@
 
 @if (Model.times.Count > 0)
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th></th>
-                @foreach (var item in Model.Patients)
-                {
-                    <th>
-                        @Html.DisplayFor(modelItem => item.RoomNumber)
-                    </th>
-                }
-            </tr>
-        </thead>
-        <tbody>
-            @* Loop over the time period *@
-            @foreach (var time in Model.times)
-            {
+    <div style="display:block; overflow-x: auto; white-space: nowrap;">
+        <table class="table time-table">
+            <thead>
                 <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => time)
-                    </td>
-                    @* Loop over the patients *@
+                    <th></th>
                     @foreach (var item in Model.Patients)
                     {
-                        <td>
-                            @* Gets the list of tasks for the patient for the specific time period *@
-                            @{
-                                var taskList = Model.taskList.Where(t => t.DueTime == time && t.PatientID == item.PatientID);
-                            }
-
-                            @foreach (var task in taskList)
-                            {
-                                <div>
-                                    <div style='height: 15px; width: 15px; display: inline-block; margin-bottom: -1px; background-color: @(task.TaskColour)'>
-                                    </div>
-                                    <p style='display: inline-block; margin: 0px;'>@Html.DisplayFor(modelItem => task.TaskName)</p>
-                                </div>
-                            }
-                        </td>
+                        <th class="title">
+                            @Html.DisplayFor(modelItem => item.RoomNumber)
+                        </th>
                     }
                 </tr>
-            }
+            </thead>
+            <tbody>
+                @* Loop over the time period *@
+                @foreach (var time in Model.times)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => time)
+                        </td>
+                        @* Loop over the patients *@
+                        @foreach (var item in Model.Patients)
+                        {
+                            <td>
+                                @* Gets the list of tasks for the patient for the specific time period *@
+                                @{
+                                    var taskList = Model.taskList.Where(t => t.DueTime == time && t.PatientID == item.PatientID);
+                                }
 
-        </tbody>
-    </table>
+                                @foreach (var task in taskList)
+                                {
+                                    <div taskid=@task.PatientDisplayTaskID style="width: fit-content; padding: 5px;">
+
+                                        <div
+                                            style='height: 15px; width: 15px; display: inline-block; margin-bottom: -1px; background-color: @(task.TaskColour)'>
+                                        </div>
+                                        <p style='display: inline-block; margin: 0px;'>@Html.DisplayFor(modelItem => task.TaskName)</p>
+                                    </div>
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+
+            </tbody>
+        </table>
+    </div>
 }
 
 <script>
     $(document).ready(function () {
         //start the timer for the session timeout
         initSessionMonitor();
+    });
+    // highlight the tasks the user will be notfied of
+    // get the task list via a ajax request
+    $.ajax({
+        type: "GET",
+        url: "/Index?handler=Tasks",
+        headers: {
+            RequestVerificationToken:
+                $('input:hidden[name="__RequestVerificationToken"]').val()
+        },
+        success: function (data) {
+            console.log(data);
+            if (data == "False") {
+
+            }
+            else if (data == "SessionExpired") {
+                console.log("SessionExpired");
+            }
+            else {
+                // NOTE: I dislike the number of loops but this is how the table is structured
+                var tableRows = $('tbody').find('tr');
+                let currentTime = new Date().toString().slice(16, 21);
+                // let currentTime = "01:00:00";
+                console.log(currentTime);
+                console.log(tableRows);
+                for (let i = 0; i < tableRows.length; i++) {
+                    // greater than 1 means patients exist
+                    if ($(tableRows[i]).children("td").length > 1) {
+                        let time = $(tableRows[i]).children("td").html().replace(/ /g, '').slice(1, 6);
+                        console.log(time);
+                        let minuteDiff = (currentTime.split(":")[0] * 60 - time.split(":")[0] * 60) + (currentTime.split(":")[1] - time.split(":")[1]);
+                        // NIGHTSHIFT
+                        if (minuteDiff < 0) {
+                            minuteDiff = 1440 + minuteDiff;
+                            console.log("nighttime " + minuteDiff);
+                        }
+                        if (minuteDiff > 120) {
+                            continue;
+                        }
+                        // DAYTIME: if the current time is less than the cell time  
+                        // if the current time is greater than 
+                        let patients = $(tableRows[i]).children("td");
+                        for (let j = 1; j < patients.length; j++) {
+                            // console.log($(patients[j]).children());
+                            // if there are tasks for the patient then get the time from the first td
+                            let tasks = $(patients[j]).children();
+                            if (tasks.length > 0) {
+                                for (let k = 0; k < tasks.length; k++) {
+                                    // check if the task is checked off
+                                    let taskid = $(tasks[k]).attr("taskid");
+                                    console.log()
+                                    let task = data.find(obj => {
+                                        return obj.patientDisplayTaskID.toString() === taskid;
+                                    })
+                                    console.log(task);
+                                    if (task.completed == false) {
+                                        $(tasks[k]).css('background-color', 'red');
+                                    }
+                                    // console.log(tasks[k]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        error: function () {
+            alert('Error occured');
+        }
     });
 </script>

@@ -19,6 +19,7 @@ namespace PatientPlanner.Pages
         {
             _context = context;
             _configuration = configuration;
+            _logger = logger;
         }
         public IList<Patient> Patients { get; set; } = new List<Patient>();
         public SettingsProfile settingsProfile { get; set; } = default!;
@@ -46,6 +47,8 @@ namespace PatientPlanner.Pages
                     {
                         Patients = await _context.Patients.Where(p => p.DeviceID == device.ID).ToListAsync();
 
+                        _logger.LogInformation("Patients count: " + Patients.Count.ToString());
+
                         if (Patients.Count() > 0)
                         {
                             if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionCurrentPatient)))
@@ -54,8 +57,18 @@ namespace PatientPlanner.Pages
                             }
                             else
                             {
-                                CurrentPatient = Patients[0];
+                                CurrentPatient = Patients[Patients.Count - 1];
+
                             }
+
+                            // if (CurrentPatient.RoomNumber == null)
+                            // {
+                            //     _logger.LogInformation("Current Patient: null");
+                            // }
+                            // else
+                            // {
+                            //     _logger.LogInformation("Current Patient: " + CurrentPatient.RoomNumber.ToString());
+                            // }
 
                             PatientID = CurrentPatient.PatientID;
 
@@ -474,6 +487,8 @@ namespace PatientPlanner.Pages
                     _context.Remove(patient);
                     await _context.SaveChangesAsync();
                 }
+                //set the 
+                HttpContext.Session.SetString(SessionCurrentPatient, "");
             }
             return new JsonResult("false");
         }

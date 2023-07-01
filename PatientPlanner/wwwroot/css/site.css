@@ -26,7 +26,7 @@ body {
 }
 
 th, td {
-  min-width: 100px;
+  min-width: 80px;
 }
 
 .time-table th:first-child {
@@ -50,14 +50,22 @@ th, td {
   border-spacing: 0;
 }
 
+.color-square {
+  height: 15px;
+  width: 15px;
+  display: inline-block;
+  margin-bottom: -1px;
+  border-radius: 3px;
+}
+
 /* .time-table td {
   border-right: solid 1px #f00; 
   border-left: solid 1px #f00;
 } */
 
+/* TODO: Add in a sticky using similar tatics to this: 
+https://codepen.io/dannievinther/pen/pGdjPV */
 .title  {
-  position: sticky;
-  top: 0;
   text-align: center;
 }
 
@@ -77,6 +85,11 @@ th, td {
   list-style-type: none;
   padding: 0;
   overflow: auto;
+}
+
+.patient-btn {
+  background-color: transparent;
+  border: none;
 }
 
 #nav-patients li {

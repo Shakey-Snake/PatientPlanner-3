@@ -1,7 +1,18 @@
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using PatientPlanner.Data;
 using PatientPlanner.Services;
+using Quartz;
+
+string credential_path = @"C:\Users\Reece\PatientPlanner\patientplanner-1d025-firebase-adminsdk-a0pus-d3041de2cf.json";
+System.Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credential_path);
+
+var defaultApp = FirebaseApp.Create(new AppOptions()
+{
+    Credential = GoogleCredential.GetApplicationDefault(),
+});
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +35,22 @@ builder.Services.AddSession(options =>
 });
 
 builder.Services.AddHostedService<TimedHostedService>();
+
+builder.Services.AddQuartz(q =>
+{
+    q.UseMicrosoftDependencyInjectionScopedJobFactory();
+    // Just use the name of your job that you created in the Jobs folder.
+    var jobKey = new JobKey("SendNoifications");
+    q.AddJob<SendNotifications>(opts => opts.WithIdentity(jobKey));
+
+    q.AddTrigger(opts => opts
+        .ForJob(jobKey)
+        .WithIdentity("SendNoifications-trigger")
+        //This Cron interval can be described as "run every 5 minutes" (when second is zero)
+        .WithCronSchedule("0 * * * * ?")
+    );
+});
+builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 var app = builder.Build();
 

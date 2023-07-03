@@ -1,6 +1,8 @@
 using PatientPlanner.Models;
-using WebPush;
+using FirebaseAdmin;
 using PatientPlanner.Data;
+using Google.Apis.Auth.OAuth2;
+using FirebaseAdmin.Messaging;
 
 namespace PatientPlanner.Services;
 public static class NotificationService
@@ -9,22 +11,27 @@ public static class NotificationService
     static NotificationService()
     {
     }
-    public static void Send(Device device, string payload, IConfiguration _configuration)
+    public static void Send(Device device, Dictionary<string, string> _Data)
     {
         try
         {
-            string vapidPublicKey = _configuration["VapidKeys:PublicKey"];
-            string vapidPrivateKey = _configuration["VapidKeys:PrivateKey"];
+            Console.WriteLine(FirebaseMessaging.DefaultInstance.ToString());
+            // This registration token comes from the client FCM SDKs.
+            var registrationToken = device.Token;
 
-            var pushSubscription = new PushSubscription(device.PushEndpoint, device.PushP256DH, device.PushAuth);
-            var vapidDetails = new VapidDetails("mailto:example@example.com", vapidPublicKey, vapidPrivateKey);
+            // See documentation on defining a message payload.
+            var message = new Message()
+            {
+                Data = _Data,
+                Token = registrationToken,
+            };
 
-            var webPushClient = new WebPushClient();
-            webPushClient.SendNotification(pushSubscription, payload, vapidDetails);
+            FirebaseMessaging.DefaultInstance.SendAsync(message);
+
         }
         catch (Exception exception)
         {
-
+            Console.WriteLine(exception.Message);
         }
     }
 }

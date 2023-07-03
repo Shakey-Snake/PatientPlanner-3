@@ -33,156 +33,157 @@ public class TimedHostedService : IHostedService, IDisposable
         //Every 5 minutes
         // sync to every 5 minutes
 
-        _alarmTimer = new Timer(SendAlarmNotification, null, TimeSpan.Zero,
-            TimeSpan.FromMinutes(1));
+        // _alarmTimer = new Timer(SendAlarmNotification, null, TimeSpan.Zero,
+        //     TimeSpan.FromSeconds(10));
+        
+        // _reminderTimer = new Timer(SendReminderNotification, null, TimeSpan.Zero,
+        //     TimeSpan.FromSeconds(10));
 
-        _reminderTimer = new Timer(SendReminderNotification, null, TimeSpan.Zero,
-            TimeSpan.FromMinutes(10));
+        // _testGoogle = new Timer(testGoogle, null, TimeSpan.Zero,
+        //     TimeSpan.FromSeconds(10));
 
         return Task.CompletedTask;
     }
 
-    private void SendNotification(string type)
-    {
-        // Get all devices, for each device get the list of patient tasks that have their time no greater than 2 hours ago.
-        // send one reminder every 5 minutes, that reminds the nurse of the most recent task they have yet to complete.
-        // example format: You have not seen patient [roomNumber] for [taskname] aswell as patient [roomNumber], [roomNumber] and others.
-        using (TimetableContext dbContext = _contextFactory.CreateDbContext())
-        {
-            var deviceList = dbContext.Devices.ToList();
-            List<int> filteredDeviceIDs = new List<int>();
+    // private void SendNotification(string type)
+    // {
 
-            foreach (Device device in deviceList)
-            {
-                filteredDeviceIDs.Add(dbContext.SettingsProfiles.Where(s => s.DeviceID == device.ID && s.EnabledNotification == true).Select(s => s.DeviceID).FirstOrDefault());
-            }
+    // }
 
-            deviceList = deviceList.Where(d => filteredDeviceIDs.Contains(d.ID)).ToList();
+    // private void SendNotification(string type)
+    // {
+    //     // Get all devices, for each device get the list of patient tasks that have their time no greater than 2 hours ago.
+    //     // send one reminder every 5 minutes, that reminds the nurse of the most recent task they have yet to complete.
+    //     // example format: You have not seen patient [roomNumber] for [taskname] aswell as patient [roomNumber], [roomNumber] and others.
+    //     using (TimetableContext dbContext = _contextFactory.CreateDbContext())
+    //     {
+    //         var deviceList = dbContext.Devices.ToList();
+    //         List<int> filteredDeviceIDs = new List<int>();
 
-            foreach (Device device in deviceList)
-            {
-                var settings = dbContext.SettingsProfiles.FirstOrDefault(s => s.DeviceID == device.ID);
-                var patients = dbContext.Patients.Where(p => p.DeviceID == device.ID).ToList();
+    //         foreach (Device device in deviceList)
+    //         {
+    //             filteredDeviceIDs.Add(dbContext.SettingsProfiles.Where(s => s.DeviceID == device.ID && s.EnabledNotification == true).Select(s => s.DeviceID).FirstOrDefault());
+    //         }
 
-                localTime = DateTime.UtcNow.TimeOfDay;
-                _logger.LogInformation("local time: {localTime}", localTime);
+    //         deviceList = deviceList.Where(d => filteredDeviceIDs.Contains(d.ID)).ToList();
 
-                var adjustedTime = new TimeSpan(0, 0, 0);
+    //         foreach (Device device in deviceList)
+    //         {
+    //             var patients = dbContext.Patients.Where(p => p.DeviceID == device.ID).ToList();
+    //             List<PatientDisplayTask> taskList = new List<PatientDisplayTask>();
+    //             if (type == " Alarm!")
+    //             {
+    //                 foreach (Patient patient in patients)
+    //                 {
+    //                     var pdt = dbContext.PatientDisplayTasks.ToList().Where(t => t.PatientID == patient.PatientID && t.DueTime.Hours == DateTime.Now.TimeOfDay.Hours && t.DueTime.Minutes == DateTime.Now.TimeOfDay.Minutes);
+    //                     taskList.AddRange(pdt);
+    //                 }
 
-                _logger.LogInformation("TimezoneDiff {TimezoneDiff}", settings.TimezoneDiff);
+    //                 if (taskList.Count != 0)
+    //                 {
+    //                     //Create the message string using the first elements for now
+    //                     string message = "Patient " + patients.Find(p => p.PatientID == taskList[0].PatientID).RoomNumber +
+    //                         " has " + taskList[0].TaskName + " due now at " + taskList[0].DueTime.ToString(@"hh\:mm");
 
-                if (settings.TimezoneDiff < 0)
-                {
-                    adjustedTime = localTime.Subtract(new TimeSpan(0, Math.Abs(settings.TimezoneDiff), 0));
-                    if (adjustedTime < TimeSpan.Zero)
-                    {
-                        adjustedTime = new TimeSpan(24, 0, 0).Add(adjustedTime);
-                    }
-                }
-                else
-                {
-                    adjustedTime = new TimeSpan(0, settings.TimezoneDiff, 0).Add(localTime);
-                }
+    //                     var payload = new Payload
+    //                     {
+    //                         title = "A patient requires attention",
+    //                         message = message
+    //                     };
 
-                _logger.LogInformation("adjustedTime: {adjustedTime}", adjustedTime.Negate());
-                if (type == " Alarm!")
-                {
-                    foreach (Patient patient in patients)
-                    {
-                        List<PatientDisplayTask> taskList = new List<PatientDisplayTask>();
-                        var pdt = dbContext.PatientDisplayTasks.ToList().Where(t => t.PatientID == patient.PatientID && t.DueTime.Hours == adjustedTime.Hours && t.DueTime.Minutes == adjustedTime.Minutes && t.Completed == false);
-                        taskList.AddRange(pdt);
+    //                     string payloadJsonString = JsonSerializer.Serialize(payload);
+    //                     NotificationService.Send(device, payloadJsonString, _configuration);
+    //                 }
+    //             }
+    //             else
+    //             {
+    //                 foreach (Patient patient in patients)
+    //                 {
 
-                        if (taskList.Count != 0)
-                        {
-                            //Create the message string using the first elements for now
-                            string message = "Patient " + patients.Find(p => p.PatientID == taskList[0].PatientID).RoomNumber +
-                                " has " + taskList[0].TaskName + " due now at " + taskList[0].DueTime.ToString(@"hh\:mm");
+    //                     var pdt = dbContext.PatientDisplayTasks.ToList().Where(t => t.PatientID == patient.PatientID && t.DueTime >= DateTime.Now.TimeOfDay.Subtract(new TimeSpan(2, 0, 0))).ToList();
+    //                     taskList.AddRange(pdt);
 
-                            var payload = new Payload
-                            {
-                                title = "A patient requires attention",
-                                message = message
-                            };
+    //                     // check for night shift reminders
+    //                     // EX: time is 1, minus 2 is 23, therefore it would be larger so it needs to check for night shifts aswell as regular
+    //                     if (DateTime.Now.TimeOfDay.Subtract(new TimeSpan(2, 0, 0)) > DateTime.Now.TimeOfDay)
+    //                     {
+    //                         // find the diff from now to 0
+    //                         var diff = new TimeSpan(0, 0, 0).Subtract(DateTime.Now.TimeOfDay);
+    //                         // gives a value between 0 and 2, use this to find the upper limit of times
+    //                         var upperTimeSpan = new TimeSpan(0, 0, 0).Subtract(diff);
+    //                         pdt = dbContext.PatientDisplayTasks.Where(t => t.PatientID == patient.PatientID && t.DueTime >= upperTimeSpan).ToList();
+    //                         taskList.AddRange(pdt);
+    //                     }
+    //                 }
 
-                            string payloadJsonString = JsonSerializer.Serialize(payload);
-                            NotificationService.Send(device, payloadJsonString, _configuration);
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (Patient patient in patients)
-                    {
-                        List<PatientDisplayTask> taskList = new List<PatientDisplayTask>();
-                        // check for diff of 2 hours
-                        var pdt = dbContext.PatientDisplayTasks.ToList().Where(t => t.PatientID == patient.PatientID && t.DueTime >= adjustedTime.Subtract(new TimeSpan(2, 0, 0)) && t.DueTime < adjustedTime && t.Completed == false).ToList();
-                        taskList.AddRange(pdt);
+    //                 if (taskList.Count != 0)
+    //                 {
+    //                     //Create the message string using the first elements for now
+    //                     // TODO: test this
 
-                        _logger.LogInformation("adjustedTime: {adjustedTime}", adjustedTime.Subtract(new TimeSpan(2, 0, 0)));
-                        _logger.LogInformation("adjustedTime: {adjustedTime}", adjustedTime);
+    //                     string message = "Patient " + patients.Find(p => p.PatientID == taskList[0].PatientID).RoomNumber +
+    //                         " was due " + taskList[0].TaskName + " " + DateTime.Now.TimeOfDay.Subtract(taskList[0].DueTime).ToString(@"hh\:mm") + " hours ago";
 
-                        // check for night shift reminders
-                        // EX: time is 1, minus 2 is 23, therefore it would be larger so it needs to check for night shifts aswell as regular
-                        if (adjustedTime.Subtract(new TimeSpan(2, 0, 0)) > adjustedTime)
-                        {
-                            _logger.LogInformation("nightshift");
-                            // find the diff from now to 0
-                            var diff = new TimeSpan(0, 0, 0).Subtract(adjustedTime);
-                            // gives a value between 0 and 2, use this to find the upper limit of times
-                            var upperTimeSpan = new TimeSpan(0, 0, 0).Subtract(diff);
-                            pdt = dbContext.PatientDisplayTasks.Where(t => t.PatientID == patient.PatientID && t.DueTime >= upperTimeSpan).ToList();
-                            taskList.AddRange(pdt);
-                        }
+    //                     var payload = new Payload
+    //                     {
+    //                         title = "It looks like you missed a patient",
+    //                         message = message
+    //                     };
 
-                        if (taskList.Count != 0)
-                        {
-                            //Create the message string using the first elements for now
-                            // TODO: test this
+    //                     string payloadJsonString = JsonSerializer.Serialize(payload);
+    //                     NotificationService.Send(device, payloadJsonString, _configuration);
+    //                 }
+    //             }
 
-                            string message = "Patient " + patients.Find(p => p.PatientID == taskList[0].PatientID).RoomNumber +
-                                " was due " + taskList[0].TaskName + " " + adjustedTime.Subtract(taskList[0].DueTime).ToString(@"hh\:mm") + " hours ago at " + taskList[0].DueTime;
+    //             // get the patient tasks
 
-                            var payload = new Payload
-                            {
-                                title = "It looks like you missed a patient",
-                                message = message
-                            };
+    //             // get the tasks that match the current device, and are before the current time, but greater than 2 hours ago
+    //             // NOTE: could make 2 read calls for a reminder and for an alarm.
+    //         }
+    //     }
+    // }
 
-                            string payloadJsonString = JsonSerializer.Serialize(payload);
-                            NotificationService.Send(device, payloadJsonString, _configuration);
-                        }
-                    }
+    // private void SendAlarmNotification(object? state)
+    // {
+    //     SendNotification(" Alarm!");
+    //     var count = Interlocked.Increment(ref executionCount);
 
+    //     _logger.LogInformation(
+    //         "Alarm being sent, Timed Hosted Service is working. Count: {Count}", count);
+    // }
 
-                }
+    // private void SendReminderNotification(object? state)
+    // {
+    //     SendNotification(" Reminder!");
 
-                // get the patient tasks
+    //     var count = Interlocked.Increment(ref executionCount);
 
-                // get the tasks that match the current device, and are before the current time, but greater than 2 hours ago
-                // NOTE: could make 2 read calls for a reminder and for an alarm.
-            }
-        }
-    }
+    //     _logger.LogInformation(
+    //         "Reminder being sent, Timed Hosted Service is working. Count: {Count}", count);
+    // }
 
-    private void SendAlarmNotification(object? state)
-    {
-        SendNotification(" Alarm!");
-        var count = Interlocked.Increment(ref executionCount);
+    // private void testGoogle(object? state)
+    // {
+    //     using (TimetableContext dbContext = _contextFactory.CreateDbContext())
+    //     {
+    //         var deviceList = dbContext.Devices.ToList();
 
-        _logger.LogInformation(
-            "Alarm being sent, Timed Hosted Service is working. Count: {Count}", count);
-    }
+    //         var dict = new Dictionary<string, string>()
+    //         {
+    //             { "test", "test" },
+    //         };
 
-    private void SendReminderNotification(object? state)
-    {
-        SendNotification(" Reminder!");
+    //         foreach (Device device in deviceList)
+    //         {
+    //             NotificationService.Send(device, dict);
+    //         }
 
-        var count = Interlocked.Increment(ref executionCount);
+    //         var count = Interlocked.Increment(ref executionCount);
 
-        _logger.LogInformation(
-            "Reminder being sent, Timed Hosted Service is working. Count: {Count}", count);
-    }
+    //         _logger.LogInformation(
+    //             "Reminder being sent, Timed Hosted Service is working. Count: {Count}", count);
+    //     }
+    // }
 
     public Task StopAsync(CancellationToken stoppingToken)
     {

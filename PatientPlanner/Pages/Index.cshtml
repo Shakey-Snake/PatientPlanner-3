@@ -2,7 +2,7 @@
 @model IndexModel
 
 @{
-    ViewData["Title"] = "Timetable";
+  ViewData["Title"] = "Timetable";
 }
 
 <script language="JavaScript" type="text/javascript" src="~/js/HidePage.js?n=4"></script>
@@ -17,51 +17,51 @@
 <input id="PushAuth" name="PushAuth" readonly required hidden />
 
 <div class="reminders">
-    <div id="no-support" class="critical-warning" style="display: none;">
-        <p>It looks like your browser doesn't support notifications, please use a different browser to enable
-            notifications</p>
-    </div>
+  <div id="denied-div" class="critical-warning" style="display: none;">
+    <p>It looks like your browser doesn't support notifications, please use a different browser to enable notifications
+    </p>
+  </div>
 
-    <div id="notifications-denied" class="critical-warning" style="display: none;">
-        <p id="notifications-denied-text" class="reminder-body">It looks like you have notifications blocked, please
-            enable the notifications in page info next to the URL</p>
-    </div>
+  <div id="permission-div" class="critical-warning" style="display: none;">
+    <p id="permission-div-text" class="reminder-body">It looks like you have notifications blocked, please enable the
+      notifications in page info next to the URL</p>
+  </div>
 
-    <div id="browser-notification-reminder" class="warning" style="display: none;">
-        <label for="browser-notifications-enable" class="reminder-body">You have notifications disabled for the browser,
-            please click here to enable notifications</label>
-        <button id="browser-notifications-enable" class="btn btn-primary" onclick="enableBrowserNotifications()">Enable
-            Notifications</button>
-    </div>
+  <div id="browser-notification-reminder" class="warning" style="display: none;">
+    <label for="browser-notifications-enable" class="reminder-body">You have notifications disabled for the browser,
+      please click here to enable notifications</label>
+    <button id="browser-notifications-enable" class="btn btn-primary" onclick="enableBrowserNotifications()">Enable
+      Notifications</button>
+  </div>
 
-    <div id="site-notifications-reminder" class="warning" style="display: none;">
-        <label for="site-notifications-enable" class="reminder-body">You have notifications disabled, please enable them
-            in the Shift and Task Settings on
-            the Patients Page or click here to enable notifications</label>
-        <button id="site-notifications-enable" class="btn btn-primary" onclick="enableSiteNotifications()">Enable
-            Notifications</button>
-    </div>
+  <div id="site-notifications-reminder" class="warning" style="display: none;">
+    <label for="site-notifications-enable" class="reminder-body">You have notifications disabled, please enable them in
+      the Shift and Task Settings on
+      the Patients Page or click here to enable notifications</label>
+    <button id="site-notifications-enable" class="btn btn-primary" onclick="enableSiteNotifications()">Enable
+      Notifications</button>
+  </div>
 
-    <div id="session-warning" class="warning" style="display: none;">
-        <label for="site-session-reminder" class="reminder-body">Your session is about to time-out, please click here to
-            refresh the session</label>
-        <button id="site-session-reminder" class="btn btn-primary" onclick="refreshPage()">Refresh</button>
-    </div>
+  <div id="session-warning" class="warning" style="display: none;">
+    <label for="site-session-reminder" class="reminder-body">Your session is about to time-out, please click here to
+      refresh the session</label>
+    <button id="site-session-reminder" class="btn btn-primary" onclick="refreshPage()">Refresh</button>
+  </div>
 
-    <div id="session-timeout" class="critical-warning" style="display: none;">
-        <label for="site-session-reminder" class="reminder-body">Your session has timed-out, please click here to
-            refresh to save future changes</label>
-        <button id="site-session-reminder" class="btn btn-primary" onclick="refreshPage()">Refresh</button>
-    </div>
+  <div id="session-timeout" class="critical-warning" style="display: none;">
+    <label for="site-session-reminder" class="reminder-body">Your session has timed-out, please click here to refresh to
+      save future changes</label>
+    <button id="site-session-reminder" class="btn btn-primary" onclick="refreshPage()">Refresh</button>
+  </div>
 </div>
 
 <div class="text-center">
-    <h1 class="display-4">Timetable</h1>
+  <h1 class="display-4">Timetable</h1>
 </div>
 
 @if (Model.times.Count > 0)
 {
-    <div style="display: block; overflow-x: auto; white-space: nowrap;">
+<div style="display: block; overflow-x: auto; white-space: nowrap;">
         <table class="table time-table">
             <thead>
                 <tr>
@@ -112,14 +112,198 @@
     </div>
 
 }
-
 <script>
-    timeLineTimer();
-    taskReminderTimer();
-    $(document).ready(function () {
-        //start the timer for the session timeout
-        initSessionMonitor();
+  $(document).ready(function () {
+    //start the timer for the session timeout
+    // initSessionMonitor();
+  });
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+  import { getMessaging, onMessage, getToken } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDWIxMplVoH-3GGQ7YQWU76DIUhikVCtjo",
+    authDomain: "patientplanner-1d025.firebaseapp.com",
+    projectId: "patientplanner-1d025",
+    storageBucket: "patientplanner-1d025.appspot.com",
+    messagingSenderId: "162531664373",
+    appId: "1:162531664373:web:ddbe00353d9be2396c80bc"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  // Retrieve Firebase Messaging object.
+  const messaging = getMessaging(app);
+
+  // IDs of divs that display registration token UI or request permission UI.
+  // const tokenDivId = 'token_div';
+  const permissionDivId = 'permission-div';
+  const errorDivId = 'denied-div';
+
+  // Handle incoming messages. Called when:
+  // - a message is received while the app has focus
+  // - the user clicks on an app notification created by a service worker
+  //   `messaging.onBackgroundMessage` handler.
+  onMessage(messaging, (payload) => {
+    console.log('Message received. ', payload);
+    // Update the UI to include the received message.
+    // appendMessage(payload);
+  });
+
+  function resetUI() {
+    // clearMessages();
+    // showToken('loading...');
+    // Get registration token. Initially this makes a network call, once retrieved
+    // subsequent calls to getToken will return from cache.
+    getToken(messaging, { vapidKey: 'BMjn0sGVG_L4BzjK9TdSlpXQGEv92Ccr6SQdsA-fDbNieO-hQb-hqdaVa6wvIdQOAcF2rWPNXeQDNOuNUhapx10' }).then((currentToken) => {
+      if (currentToken) {
+        console.log('Token retrieved: ', currentToken);
+        sendTokenToServer(currentToken);
+        updateUIForPushEnabled(currentToken);
+      } else {
+        // Show permission request.
+        console.log('No registration token available. Request permission to generate one.');
+        // Show permission UI.
+        updateUIForPushPermissionRequired();
+        setTokenSentToServer(false);
+      }
+    }).catch((err) => {
+      console.log('An error occurred while retrieving token. ', err);
+      // showToken('Error retrieving registration token. ', err);
+      setTokenSentToServer(false);
     });
-    // highlight the tasks the user will be notfied of
-    // get the task list via a ajax request
+  }
+
+
+  function showToken(currentToken) {
+    // Show token in console and UI.
+    const tokenElement = document.querySelector('#token');
+    tokenElement.textContent = currentToken;
+  }
+
+  // Send the registration token your application server, so that it can:
+  // - send messages back to this app
+  // - subscribe/unsubscribe the token from topics
+  function sendTokenToServer(currentToken) {
+    if (!isTokenSentToServer()) {
+      console.log('Sending token to server...');
+      // TODO(developer): Send the current token to your server.
+      $.ajax({
+        type: "POST",
+        // Should it go to the index? Or is there a better way?
+        url: "/Index?handler=CheckSub",
+        data: {
+          Token: currentToken
+        },
+        headers: {
+          RequestVerificationToken:
+            $('input:hidden[name="__RequestVerificationToken"]').val()
+        },
+        success: function (data) {
+          if (data == "false") {
+            setTokenSentToServer(true);
+            console.log("reload");
+            location.reload();
+          }
+          console.log(data);
+        },
+        error: function () {
+          alert('Error occured');
+        }
+      });
+    } else {
+      console.log('Token already sent to server so won\'t send it again ' +
+        'unless it changes');
+    }
+  }
+
+  function isTokenSentToServer() {
+    return window.localStorage.getItem('sentToServer') === '1';
+  }
+
+  function setTokenSentToServer(sent) {
+    window.localStorage.setItem('sentToServer', sent ? '1' : '0');
+  }
+
+  function showHideDiv(divId, show) {
+    const div = document.querySelector('#' + divId);
+    if (show) {
+      div.style = 'display: visible';
+    } else {
+      div.style = 'display: none';
+    }
+  }
+
+  function requestPermission() {
+    console.log('Requesting permission...');
+    Notification.requestPermission().then((permission) => {
+      if (permission === 'granted') {
+        console.log('Notification permission granted.');
+        // TODO(developer): Retrieve a registration token for use with FCM.
+        // In many cases once an app has been granted notification permission,
+        // it should update its UI reflecting this.
+        resetUI();
+      } else {
+        console.log('Unable to get permission to notify.');
+      }
+    });
+  }
+
+  function deleteToken() {
+    // Delete registration token.
+    messaging.getToken().then((currentToken) => {
+      messaging.deleteToken(currentToken).then(() => {
+        console.log('Token deleted.');
+        setTokenSentToServer(false);
+        // Once token is deleted update UI.
+        resetUI();
+      }).catch((err) => {
+        console.log('Unable to delete token. ', err);
+      });
+    }).catch((err) => {
+      console.log('Error retrieving registration token. ', err);
+      showToken('Error retrieving registration token. ', err);
+    });
+  }
+
+  // Add a message to the messages element.
+  function appendMessage(payload) {
+    const messagesElement = document.querySelector('#messages');
+    const dataHeaderElement = document.createElement('h5');
+    const dataElement = document.createElement('pre');
+    dataElement.style = 'overflow-x:hidden;';
+    dataHeaderElement.textContent = 'Received message:';
+    dataElement.textContent = JSON.stringify(payload, null, 2);
+    messagesElement.appendChild(dataHeaderElement);
+    messagesElement.appendChild(dataElement);
+  }
+
+  // Clear the messages element of all children.
+  function clearMessages() {
+    const messagesElement = document.querySelector('#messages');
+    while (messagesElement.hasChildNodes()) {
+      messagesElement.removeChild(messagesElement.lastChild);
+    }
+  }
+
+  function updateUIForPushEnabled(currentToken) {
+    //showHideDiv(tokenDivId, true);
+    showHideDiv(permissionDivId, false);
+    showHideDiv(errorDivId, false);
+    //showToken(currentToken);
+  }
+
+  function updateUIForPushPermissionRequired() {
+    //showHideDiv(tokenDivId, false);
+    showHideDiv(permissionDivId, true);
+    showHideDiv(errorDivId, false);
+  }
+
+  function updateUIForNotificationsDisabled() {
+    showHideDiv(errorDivId, true);
+    showHideDiv(permissionDivId, false);
+  }
+
+  resetUI();
 </script>

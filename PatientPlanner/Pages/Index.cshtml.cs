@@ -12,7 +12,7 @@ public class IndexModel : PageModel
     private readonly ILogger<IndexModel> _logger;
     private readonly PatientPlanner.Data.TimetableContext _context;
     private readonly IConfiguration _configuration;
-    public const string SessionEndPoint = "_End";
+    public const string SessionToken = "_Token";
 
     public IndexModel(PatientPlanner.Data.TimetableContext context, ILogger<IndexModel> logger, IConfiguration configuration)
     {
@@ -28,18 +28,18 @@ public class IndexModel : PageModel
 
     public async Task OnGetAsync()
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString(SessionToken)))
         {
             Console.WriteLine("Empty");
         }
-        if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+        if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionToken)))
         {
-            var endpoint = HttpContext.Session.GetString(SessionEndPoint);
+            var token = HttpContext.Session.GetString(SessionToken);
             ViewData["publicKey"] = _configuration["VapidKeys:PublicKey"];
 
             if (_context.Devices != null)
             {
-                Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == endpoint);
+                Device device = _context.Devices.FirstOrDefault(device => device.Token == token);
 
                 //Get a list of all of the devices patients
 
@@ -134,22 +134,23 @@ public class IndexModel : PageModel
     }
 
     public async Task<IActionResult> OnPostCheckSub(string PushEndpoint, string PushP256DH, string PushAuth, int TimeOffSet)
+    
     {
-        Device device = _context.Devices.FirstOrDefault(d => d.PushP256DH == PushP256DH);
+        Device device = _context.Devices.FirstOrDefault(d => d.Token == Token);
         Console.WriteLine(device);
 
         //set the session state
-        if (device != null && string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+        if (device != null && string.IsNullOrEmpty(HttpContext.Session.GetString(SessionToken)))
         {
-            HttpContext.Session.SetString(SessionEndPoint, PushP256DH);
+            HttpContext.Session.SetString(SessionToken, Token);
             Console.WriteLine("refresh");
             return new JsonResult("false");
         }
 
         //Device doesnt exist therefore create the device
-        if (device == null && string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+        if (device == null && string.IsNullOrEmpty(HttpContext.Session.GetString(SessionToken)))
         {
-            Device Device = new Device(PushEndpoint, PushP256DH, PushAuth);
+            Device Device = new Device(Token);
             _context.Devices.Add(Device);
 
             await _context.SaveChangesAsync();

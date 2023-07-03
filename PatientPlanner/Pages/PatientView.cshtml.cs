@@ -11,7 +11,7 @@ namespace PatientPlanner.Pages
         private readonly ILogger<IndexModel> _logger;
         private readonly PatientPlanner.Data.TimetableContext _context;
         private readonly IConfiguration _configuration;
-        public const string SessionEndPoint = "_End";
+        public const string SessionToken = "_Token";
         public const string SessionCurrentPatient = "_CurrPatient";
         public Patient CurrentPatient = null;
 
@@ -36,12 +36,12 @@ namespace PatientPlanner.Pages
         public async Task OnGetAsync()
         {
             // Check for a session state, then get the device. Otherwise have automatic reminder for the user to refresh the page
-            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionToken)))
             {
-                var p256dh = HttpContext.Session.GetString(SessionEndPoint);
+                var token = HttpContext.Session.GetString(SessionToken);
                 if (_context.Devices != null)
                 {
-                    Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == p256dh);
+                    Device device = _context.Devices.FirstOrDefault(device => device.Token == token);
 
                     if (_context.Patients != null)
                     {
@@ -299,12 +299,12 @@ namespace PatientPlanner.Pages
 
         public async Task<IActionResult> OnPostAddPatient(string roomNumber)
         {
-            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionToken)))
             {
-                var p256dh = HttpContext.Session.GetString(SessionEndPoint);
+                var token = HttpContext.Session.GetString(SessionToken);
                 if (_context.Devices != null)
                 {
-                    Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == p256dh);
+                    Device device = _context.Devices.FirstOrDefault(device => device.Token == token);
                     Patient pateint = new Patient(device.ID, roomNumber);
 
                     _context.Patients.Add(pateint);
@@ -321,17 +321,17 @@ namespace PatientPlanner.Pages
 
         public async Task<IActionResult> OnPostDeleteTask(string taskid)
         {
-            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionToken)))
             {
 
-                var p256dh = HttpContext.Session.GetString(SessionEndPoint);
+                var token = HttpContext.Session.GetString(SessionToken);
                 // check if the task belongs to the session for security
                 PatientDisplayTask task = _context.PatientDisplayTasks.FirstOrDefault(t => t.PatientDisplayTaskID == Int32.Parse(taskid));
 
                 if (task != null)
                 {
                     Patient patient = _context.Patients.FirstOrDefault(p => p.PatientID == task.PatientID);
-                    Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == p256dh);
+                    Device device = _context.Devices.FirstOrDefault(device => device.Token == token);
 
                     if (patient != null && device != null && patient.DeviceID == device.ID)
                     {
@@ -347,7 +347,7 @@ namespace PatientPlanner.Pages
 
         public async Task<IActionResult> OnPostSaveBaseTask(int taskid, string taskColour, string taskName)
         {
-            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionToken)))
             {
                 PatientTask updateTask = _context.PatientTasks.FirstOrDefault(p => p.PatientTaskID == taskid);
                 // NOTE: entity becomes tracked therefore no need to use update query
@@ -376,7 +376,7 @@ namespace PatientPlanner.Pages
 
         public async Task<IActionResult> OnPostDeleteBaseTask(int taskid)
         {
-            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionToken)))
             {
                 // find the task, then remove it in the base task list
                 PatientTask deleteTask = _context.PatientTasks.FirstOrDefault(p => p.PatientTaskID == taskid);
@@ -401,14 +401,14 @@ namespace PatientPlanner.Pages
 
         public async Task<IActionResult> OnPostAddBaseTask(string taskName, string taskColour)
         {
-            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionToken)))
             {
-                var p256dh = HttpContext.Session.GetString(SessionEndPoint);
+                var token = HttpContext.Session.GetString(SessionToken);
 
                 if (_context.Devices != null)
                 {
-                    Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == p256dh);
-
+                    Device device = _context.Devices.FirstOrDefault(device => device.Token == token);
+                    Patient patient = _context.Patients.FirstOrDefault(p => p.DeviceID == device.ID);
                     PatientTask task = new PatientTask(device.ID, taskName, taskColour);
 
                     _context.PatientTasks.Add(task);
@@ -421,13 +421,13 @@ namespace PatientPlanner.Pages
         // sets the start and end time
         public async Task<IActionResult> OnPostSetTimes(string startTime, string endTime)
         {
-            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionToken)))
             {
-                var p256dh = HttpContext.Session.GetString(SessionEndPoint);
+                var token = HttpContext.Session.GetString(SessionToken);
                 if (_context.Devices != null)
                 {
 
-                    Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == p256dh);
+                    Device device = _context.Devices.FirstOrDefault(device => device.Token == token);
                     SettingsProfile settings = _context.SettingsProfiles.FirstOrDefault(s => s.DeviceID == device.ID);
 
                     string[] splitStartTime = startTime.Split(":");
@@ -445,13 +445,13 @@ namespace PatientPlanner.Pages
 
         public async Task<IActionResult> OnPostSetInterval(string interval)
         {
-            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionToken)))
             {
-                var p256dh = HttpContext.Session.GetString(SessionEndPoint);
+                var token = HttpContext.Session.GetString(SessionToken);
                 if (_context.Devices != null)
                 {
 
-                    Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == p256dh);
+                    Device device = _context.Devices.FirstOrDefault(device => device.Token == token);
                     SettingsProfile settings = _context.SettingsProfiles.FirstOrDefault(s => s.DeviceID == device.ID);
 
                     settings.Interval = Int32.Parse(interval);
@@ -465,7 +465,7 @@ namespace PatientPlanner.Pages
 
         public async Task<IActionResult> OnPostSavePatient(int patientID, string patientRN)
         {
-            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionToken)))
             {
                 Patient patient = _context.Patients.FirstOrDefault(p => p.PatientID == patientID);
                 // NOTE: entity becomes tracked therefore no need to use update query
@@ -478,7 +478,7 @@ namespace PatientPlanner.Pages
 
         public async Task<IActionResult> OnPostDeletePatient(int patientID)
         {
-            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionToken)))
             {
                 Patient patient = _context.Patients.FirstOrDefault(p => p.PatientID == patientID);
                 // NOTE: entity becomes tracked therefore no need to use update query
@@ -495,10 +495,10 @@ namespace PatientPlanner.Pages
 
         public IActionResult OnGetNotifications()
         {
-            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionToken)))
             {
-                var p256dh = HttpContext.Session.GetString(SessionEndPoint);
-                Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == p256dh);
+                var token = HttpContext.Session.GetString(SessionToken);
+                Device device = _context.Devices.FirstOrDefault(device => device.Token == token);
                 settingsProfile = _context.SettingsProfiles.FirstOrDefault(s => s.DeviceID == device.ID);
                 return new JsonResult(settingsProfile.EnabledNotification.ToString());
             }
@@ -507,10 +507,10 @@ namespace PatientPlanner.Pages
 
         public async Task<IActionResult> OnPostEnableNotifications(bool enabled)
         {
-            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionToken)))
             {
-                var p256dh = HttpContext.Session.GetString(SessionEndPoint);
-                Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == p256dh);
+                var token = HttpContext.Session.GetString(SessionToken);
+                Device device = _context.Devices.FirstOrDefault(device => device.Token == token);
                 settingsProfile = _context.SettingsProfiles.FirstOrDefault(s => s.DeviceID == device.ID);
                 settingsProfile.EnabledNotification = enabled;
                 await _context.SaveChangesAsync();

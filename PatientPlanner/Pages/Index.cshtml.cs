@@ -105,12 +105,12 @@ public class IndexModel : PageModel
 
     public async Task<IActionResult> OnGetTasks()
     {
-        if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+        if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionToken)))
         {
-            var endpoint = HttpContext.Session.GetString(SessionEndPoint);
+            var token = HttpContext.Session.GetString(SessionToken);
             if (_context.Devices != null)
             {
-                Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == endpoint);
+                Device device = _context.Devices.FirstOrDefault(device => device.Token == token);
 
                 //Get a list of all of the devices patients
 
@@ -133,8 +133,7 @@ public class IndexModel : PageModel
         return new JsonResult("False");
     }
 
-    public async Task<IActionResult> OnPostCheckSub(string PushEndpoint, string PushP256DH, string PushAuth, int TimeOffSet)
-    
+    public async Task<IActionResult> OnPostCheckSub(string Token, int TimeOffSet)
     {
         Device device = _context.Devices.FirstOrDefault(d => d.Token == Token);
         Console.WriteLine(device);

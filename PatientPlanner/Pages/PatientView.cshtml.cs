@@ -521,9 +521,9 @@ namespace PatientPlanner.Pages
 
         public async Task<IActionResult> OnPostMarkTaskDone(int taskID, bool done)
         {
-            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionToken)))
             {
-                var p256dh = HttpContext.Session.GetString(SessionEndPoint);
+                var p256dh = HttpContext.Session.GetString(SessionToken);
                 PatientDisplayTask task = _context.PatientDisplayTasks.FirstOrDefault(t => t.PatientDisplayTaskID == taskID);
                 task.Completed = done;
                 await _context.SaveChangesAsync();

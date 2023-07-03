@@ -17,31 +17,39 @@
 
 <div class="reminders">
     <div id="no-support" class="critical-warning" style="display: none;">
-        <p>It looks like your browser doesn't support notifications, please use a different browser to enable notifications</p>
+        <p>It looks like your browser doesn't support notifications, please use a different browser to enable
+            notifications</p>
     </div>
 
     <div id="notifications-denied" class="critical-warning" style="display: none;">
-        <p id="notifications-denied-text" class="reminder-body">It looks like you have notifications disabled, please enable the notifications in page info next to the URL</p>
+        <p id="notifications-denied-text" class="reminder-body">It looks like you have notifications disabled, please
+            enable the notifications in page info next to the URL</p>
     </div>
 
     <div id="browser-notification-reminder" class="warning" style="display: none;">
-        <label for="browser-notifications-enable" class="reminder-body">You have notifications disabled for the browser, please click here to enable notifications</label>
-        <button id="browser-notifications-enable" class="btn btn-primary" onclick="enableBrowserNotifications()">Enable Notifications</button>
+        <label for="browser-notifications-enable" class="reminder-body">You have notifications disabled for the browser,
+            please click here to enable notifications</label>
+        <button id="browser-notifications-enable" class="btn btn-primary" onclick="enableBrowserNotifications()">Enable
+            Notifications</button>
     </div>
-    
+
     <div id="site-notifications-reminder" class="warning" style="display: none;">
-        <label for="site-notifications-enable" class="reminder-body">You have notifications disabled, please enable them in the Shift and Task Settings on
+        <label for="site-notifications-enable" class="reminder-body">You have notifications disabled, please enable them
+            in the Shift and Task Settings on
             the Patients Page or click here to enable notifications</label>
-        <button id="site-notifications-enable" class="btn btn-primary" onclick="enableSiteNotifications()">Enable Notifications</button>
+        <button id="site-notifications-enable" class="btn btn-primary" onclick="enableSiteNotifications()">Enable
+            Notifications</button>
     </div>
 
     <div id="session-warning" class="warning" style="display: none;">
-        <label for="site-session-reminder" class="reminder-body">Your session is about to time-out, please click here to refresh the session</label>
+        <label for="site-session-reminder" class="reminder-body">Your session is about to time-out, please click here to
+            refresh the session</label>
         <button id="site-session-reminder" class="btn btn-primary" onclick="refreshPage()">Refresh</button>
     </div>
 
     <div id="session-timeout" class="critical-warning" style="display: none;">
-        <label for="site-session-reminder" class="reminder-body">Your session has timed-out, please click here to refresh to save future changes</label>
+        <label for="site-session-reminder" class="reminder-body">Your session has timed-out, please click here to
+            refresh to save future changes</label>
         <button id="site-session-reminder" class="btn btn-primary" onclick="refreshPage()">Refresh</button>
     </div>
 </div>
@@ -54,12 +62,14 @@
 <div class="settings-container">
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#panel-settings"
         aria-controls="panel-settings" aria-expanded="false" aria-label="Toggle navigation">
-        Shift and Task Settings <svg fill="#000000" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
-            xmlns:xlink="http://www.w3.org/1999/xlink" width="20px" height="20px" viewBox="0 0 45.973 45.973"
-            xml:space="preserve">
+        Shift and Task Settings <svg fill="#000000" width="20px" height="20px" viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg">
+            <path
+                d="M12 21a8.985 8.985 0 0 1-1.755-.173 1 1 0 0 1-.791-.813l-.273-1.606a6.933 6.933 0 0 1-1.32-.762l-1.527.566a1 1 0 0 1-1.1-.278 8.977 8.977 0 0 1-1.756-3.041 1 1 0 0 1 .31-1.092l1.254-1.04a6.979 6.979 0 0 1 0-1.524L3.787 10.2a1 1 0 0 1-.31-1.092 8.977 8.977 0 0 1 1.756-3.042 1 1 0 0 1 1.1-.278l1.527.566a6.933 6.933 0 0 1 1.32-.762l.274-1.606a1 1 0 0 1 .791-.813 8.957 8.957 0 0 1 3.51 0 1 1 0 0 1 .791.813l.273 1.606a6.933 6.933 0 0 1 1.32.762l1.527-.566a1 1 0 0 1 1.1.278 8.977 8.977 0 0 1 1.756 3.041 1 1 0 0 1-.31 1.092l-1.254 1.04a6.979 6.979 0 0 1 0 1.524l1.254 1.04a1 1 0 0 1 .31 1.092 8.977 8.977 0 0 1-1.756 3.041 1 1 0 0 1-1.1.278l-1.527-.566a6.933 6.933 0 0 1-1.32.762l-.273 1.606a1 1 0 0 1-.791.813A8.985 8.985 0 0 1 12 21zm-.7-2.035a6.913 6.913 0 0 0 1.393 0l.247-1.451a1 1 0 0 1 .664-.779 4.974 4.974 0 0 0 1.696-.975 1 1 0 0 1 1.008-.186l1.381.512a7.012 7.012 0 0 0 .7-1.206l-1.133-.939a1 1 0 0 1-.343-.964 5.018 5.018 0 0 0 0-1.953 1 1 0 0 1 .343-.964l1.124-.94a7.012 7.012 0 0 0-.7-1.206l-1.38.512a1 1 0 0 1-1-.186 4.974 4.974 0 0 0-1.688-.976 1 1 0 0 1-.664-.779l-.248-1.45a6.913 6.913 0 0 0-1.393 0l-.25 1.45a1 1 0 0 1-.664.779A4.974 4.974 0 0 0 8.7 8.24a1 1 0 0 1-1 .186l-1.385-.512a7.012 7.012 0 0 0-.7 1.206l1.133.939a1 1 0 0 1 .343.964 5.018 5.018 0 0 0 0 1.953 1 1 0 0 1-.343.964l-1.128.94a7.012 7.012 0 0 0 .7 1.206l1.38-.512a1 1 0 0 1 1 .186 4.974 4.974 0 0 0 1.688.976 1 1 0 0 1 .664.779zm.7-3.725a3.24 3.24 0 0 1 0-6.48 3.24 3.24 0 0 1 0 6.48zm0-4.48A1.24 1.24 0 1 0 13.24 12 1.244 1.244 0 0 0 12 10.76z" />
+        </svg>
+        <g>
             <g>
-                <g>
-                    <path d="M43.454,18.443h-2.437c-0.453-1.766-1.16-3.42-2.082-4.933l1.752-1.756c0.473-0.473,0.733-1.104,0.733-1.774
+                <path d="M43.454,18.443h-2.437c-0.453-1.766-1.16-3.42-2.082-4.933l1.752-1.756c0.473-0.473,0.733-1.104,0.733-1.774
 			c0-0.669-0.262-1.301-0.733-1.773l-2.92-2.917c-0.947-0.948-2.602-0.947-3.545-0.001l-1.826,1.815
 			C30.9,6.232,29.296,5.56,27.529,5.128V2.52c0-1.383-1.105-2.52-2.488-2.52h-4.128c-1.383,0-2.471,1.137-2.471,2.52v2.607
 			c-1.766,0.431-3.38,1.104-4.878,1.977l-1.825-1.815c-0.946-0.948-2.602-0.947-3.551-0.001L5.27,8.205
@@ -72,8 +82,8 @@
 			c0.92-1.514,1.627-3.179,2.08-4.943h2.438c1.383,0,2.52-1.087,2.52-2.471v-4.125C45.973,19.555,44.837,18.443,43.454,18.443z
 			 M22.976,30.85c-4.378,0-7.928-3.517-7.928-7.852c0-4.338,3.55-7.85,7.928-7.85c4.379,0,7.931,3.512,7.931,7.85
 			C30.906,27.334,27.355,30.85,22.976,30.85z" />
-                </g>
             </g>
+        </g>
         </svg>
     </button>
     <div id="panel-settings" class="collapse w-100">
@@ -142,9 +152,29 @@
                             <input type="color" value="@task.TaskColour" disabled>
                         </td>
                         <td>
-                            <button class="edit-task-button">Edit</button>
-                            <button class="save-task-button" style="display: none;">Save</button>
-                            <button class="delete-task-button" style="display: none;">Delete</button>
+                            <button class="edit-task-button">
+                                <svg fill="#000000" width="20px" height="20px" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M20.269 5.614l-1.883-1.883a2.5 2.5 0 0 0-3.531 0l-9.562 9.562a1 1 0 0 0-.242.391l-2 6a1 1 0 0 0 1.265 1.265l6-2a1 1 0 0 0 .391-.242l9.562-9.562a2.5 2.5 0 0 0 0-3.531zM7.414 14L14 7.414 16.586 10 10 16.586zm-.977 1.851l1.712 1.712-2.568.856zm12.417-8.12L18 8.586 15.414 6l.854-.854a.5.5 0 0 1 .7 0l1.883 1.883a.5.5 0 0 1 .003.702z" />
+                                </svg>
+                            </button>
+                            <button class="save-task-button" style="display: none;">
+                                <svg fill="#000000" width="20px" height="20px" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M9.172 18.657a1 1 0 0 1-.707-.293l-5.657-5.657a1 1 0 0 1 1.414-1.414l4.95 4.95L19.778 5.636a1 1 0 0 1 1.414 1.414L9.879 18.364a1 1 0 0 1-.707.293z" />
+                                </svg>
+                            </button>
+                            <button class="delete-task-button" style="display: none;">
+                                <svg fill="#000000" width="20px" height="20px" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M20 6h-3.155a.949.949 0 0 0-.064-.125l-1.7-2.124A1.989 1.989 0 0 0 13.519 3h-3.038a1.987 1.987 0 0 0-1.562.75l-1.7 2.125A.949.949 0 0 0 7.155 6H4a1 1 0 0 0 0 2h1v11a2 2 0 0 0 1.994 2h10.011A2 2 0 0 0 19 19V8h1a1 1 0 0 0 0-2zm-9.519-1h3.038l.8 1H9.681zm6.524 14H7V8h10z" />
+                                    <path
+                                        d="M14 18a1 1 0 0 1-1-1v-7a1 1 0 0 1 2 0v7a1 1 0 0 1-1 1zM10 18a1 1 0 0 1-1-1v-7a1 1 0 0 1 2 0v7a1 1 0 0 1-1 1z" />
+                                </svg>
+                            </button>
                         </td>
                     </tr>
                 }
@@ -156,7 +186,13 @@
                         <input type="color">
                     </td>
                     <td>
-                        <button id="add-task-button">Add</button>
+                        <button id="add-task-button">
+                            <svg fill="#000000" width="16px" height="16px" viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M13 11h7a1 1 0 0 1 0 2h-7v7a1 1 0 0 1-2 0v-7H4a1 1 0 0 1 0-2h7V4a1 1 0 0 1 2 0v7z" />
+                            </svg>
+                        </button>
                     </td>
                 </tr>
             </table>
@@ -225,9 +261,26 @@
                     </form>
                     <input id="patient-id" hidden value="@patient.PatientID">
                     <input id="patient-room-number-input" style="display:none;" type="text" value="@patient.RoomNumber">
-                    <button class="edit-patient-button patient-btn" style="display:inline-block;">Edit</button>
-                    <button class="save-patient-button patient-btn" style="display:none;">Save</button>
-                    <button class="delete-patient-button patient-btn" style="display:none;">Delete</button>
+                    <button class="edit-patient-button patient-btn" style="display:inline-block;">
+                        <svg fill="#000000" width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M20.269 5.614l-1.883-1.883a2.5 2.5 0 0 0-3.531 0l-9.562 9.562a1 1 0 0 0-.242.391l-2 6a1 1 0 0 0 1.265 1.265l6-2a1 1 0 0 0 .391-.242l9.562-9.562a2.5 2.5 0 0 0 0-3.531zM7.414 14L14 7.414 16.586 10 10 16.586zm-.977 1.851l1.712 1.712-2.568.856zm12.417-8.12L18 8.586 15.414 6l.854-.854a.5.5 0 0 1 .7 0l1.883 1.883a.5.5 0 0 1 .003.702z" />
+                        </svg>
+                    </button>
+                    <button class="save-patient-button patient-btn" style="display:none;">
+                        <svg fill="#000000" width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M9.172 18.657a1 1 0 0 1-.707-.293l-5.657-5.657a1 1 0 0 1 1.414-1.414l4.95 4.95L19.778 5.636a1 1 0 0 1 1.414 1.414L9.879 18.364a1 1 0 0 1-.707.293z" />
+                        </svg>
+                    </button>
+                    <button class="delete-patient-button patient-btn" style="display:none;">
+                        <svg fill="#000000" width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M20 6h-3.155a.949.949 0 0 0-.064-.125l-1.7-2.124A1.989 1.989 0 0 0 13.519 3h-3.038a1.987 1.987 0 0 0-1.562.75l-1.7 2.125A.949.949 0 0 0 7.155 6H4a1 1 0 0 0 0 2h1v11a2 2 0 0 0 1.994 2h10.011A2 2 0 0 0 19 19V8h1a1 1 0 0 0 0-2zm-9.519-1h3.038l.8 1H9.681zm6.524 14H7V8h10z" />
+                            <path
+                                d="M14 18a1 1 0 0 1-1-1v-7a1 1 0 0 1 2 0v7a1 1 0 0 1-1 1zM10 18a1 1 0 0 1-1-1v-7a1 1 0 0 1 2 0v7a1 1 0 0 1-1 1z" />
+                        </svg>
+                    </button>
                 </li>
             }
             else
@@ -239,14 +292,34 @@
                     </form>
                     <input id="patient-id" hidden value="@patient.PatientID">
                     <input id="patient-room-number-input" style="display:none;" type="text" value="@patient.RoomNumber">
-                    <button class="edit-patient-button patient-btn" style="display:inline-block;">Edit</button>
-                    <button class="save-patient-button patient-btn" style="display:none;">Save</button>
-                    <button class="delete-patient-button patient-btn" style="display:none;">Delete</button>
+                    <button class="edit-patient-button patient-btn" style="display:inline-block;">
+                        <svg fill="#000000" width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M20.269 5.614l-1.883-1.883a2.5 2.5 0 0 0-3.531 0l-9.562 9.562a1 1 0 0 0-.242.391l-2 6a1 1 0 0 0 1.265 1.265l6-2a1 1 0 0 0 .391-.242l9.562-9.562a2.5 2.5 0 0 0 0-3.531zM7.414 14L14 7.414 16.586 10 10 16.586zm-.977 1.851l1.712 1.712-2.568.856zm12.417-8.12L18 8.586 15.414 6l.854-.854a.5.5 0 0 1 .7 0l1.883 1.883a.5.5 0 0 1 .003.702z" />
+                        </svg>
+                    </button>
+                    <button class="save-patient-button patient-btn" style="display:none;">
+                        <svg fill="#000000" width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M9.172 18.657a1 1 0 0 1-.707-.293l-5.657-5.657a1 1 0 0 1 1.414-1.414l4.95 4.95L19.778 5.636a1 1 0 0 1 1.414 1.414L9.879 18.364a1 1 0 0 1-.707.293z" />
+                        </svg>
+                    </button>
+                    <button class="delete-patient-button patient-btn" style="display:none;">
+                        <svg fill="#000000" width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M20 6h-3.155a.949.949 0 0 0-.064-.125l-1.7-2.124A1.989 1.989 0 0 0 13.519 3h-3.038a1.987 1.987 0 0 0-1.562.75l-1.7 2.125A.949.949 0 0 0 7.155 6H4a1 1 0 0 0 0 2h1v11a2 2 0 0 0 1.994 2h10.011A2 2 0 0 0 19 19V8h1a1 1 0 0 0 0-2zm-9.519-1h3.038l.8 1H9.681zm6.524 14H7V8h10z" />
+                            <path
+                                d="M14 18a1 1 0 0 1-1-1v-7a1 1 0 0 1 2 0v7a1 1 0 0 1-1 1zM10 18a1 1 0 0 1-1-1v-7a1 1 0 0 1 2 0v7a1 1 0 0 1-1 1z" />
+                        </svg>
+                    </button>
                 </li>
             }
         }
         <li id="add-new-patient" class="nav-item">
-            <p id="show-patient-add">+</p>
+            <svg id="show-patient-add" fill="#000000" width="16px" height="16px" viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg">
+                <path d="M13 11h7a1 1 0 0 1 0 2h-7v7a1 1 0 0 1-2 0v-7H4a1 1 0 0 1 0-2h7V4a1 1 0 0 1 2 0v7z" />
+            </svg>
             <div style="display: none" id="text-add">
                 <input id="add-patient-text" type="text">
                 <button id="add-patient-button">Add</button>
@@ -282,12 +355,8 @@
                             @Html.DisplayFor(modelItem => time)
                         </td>
                         <td time='@(time.ToString(@"hh\:mm"))' class="add">
-                            <svg style="color: blue" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
-                                class="bi bi-plus" viewBox="0 0 20 20">
-                                <path
-                                    d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"
-                                    fill="blue">
-                                </path>
+                            <svg fill="blue" width="16px" height="16px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M13 11h7a1 1 0 0 1 0 2h-7v7a1 1 0 0 1-2 0v-7H4a1 1 0 0 1 0-2h7V4a1 1 0 0 1 2 0v7z" />
                             </svg>
                         </td>
                         <td></td>
@@ -308,30 +377,26 @@
                                     @Html.DisplayFor(modelItem => time)
                                 </td>
                                 <td time='@(time.ToString(@"hh\:mm"))' class="add" rowspan="@rowspanCount">
-                                    <svg style="color: blue" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                        class="bi bi-plus" viewBox="0 0 16 16">
-                                        <path
-                                            d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"
-                                            fill="blue">
-                                        </path>
+                                    <svg fill="blue" width="16px" height="16px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M13 11h7a1 1 0 0 1 0 2h-7v7a1 1 0 0 1-2 0v-7H4a1 1 0 0 1 0-2h7V4a1 1 0 0 1 2 0v7z" />
                                     </svg>
                                 </td>
                             }
 
-                            <td>
-                                <div
-                                    style='height: 15px; width: 15px; display: inline-block; margin-bottom: -1px; background-color: @(newTaskList.ToList()[i].TaskColour)'>
+                            <td taskid="@newTaskList.ToList()[i].PatientDisplayTaskID" class="task-column">
+                                <div class="task-color-square color-square"
+                                    style='background-color: @(newTaskList.ToList()[i].TaskColour)'>
                                 </div>
-                                <p style='display: inline-block; margin: 0px;'>@Html.DisplayFor(modelItem =>
+                                <p class="task-p" style='display: inline-block; margin: 0px;'>@Html.DisplayFor(modelItem =>
                     newTaskList.ToList()[i].TaskName)</p>
-
+                                <input type="checkbox" class="mark-done" @(newTaskList.ToList()[i].Completed ? "checked=\"checked\"" :
+                    "") taskid="@newTaskList.ToList()[i].PatientDisplayTaskID">
                             </td>
                             @* TODO: Add id of task as an attribute relating to the task. *@
                             <td taskid="@newTaskList.ToList()[i].PatientDisplayTaskID" class="remove">
-                                <svg style="color: red" width="30" height="25" viewBox="0 0 15 15" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M11 8H4V7H11V8Z" fill="red">
-                                    </path>
+                                <svg fill="red" width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M13.414 12l4.95-4.95a1 1 0 0 0-1.414-1.414L12 10.586l-4.95-4.95A1 1 0 0 0 5.636 7.05l4.95 4.95-4.95 4.95a1 1 0 0 0 1.414 1.414l4.95-4.95 4.95 4.95a1 1 0 0 0 1.414-1.414z" />
                                 </svg>
                             </td>
                         </tr>
@@ -389,39 +454,109 @@
         });
     });
 
-    const removeBoxes = document.querySelectorAll('.remove');
-    console.log(removeBoxes);
+    function removeDisplayTask(event) {
+        let _taskid = $(this).attr("taskid");
+        console.log(_taskid);
+        if (confirm("Are you sure you want to remove this task?") == true) {
+            $.ajax({
+                type: "POST",
+                url: "/PatientView?handler=DeleteTask",
+                data: {
+                    taskid: _taskid
+                },
+                headers: {
+                    RequestVerificationToken:
+                        $('input:hidden[name="__RequestVerificationToken"]').val()
+                },
+                success: function (data) {
+                    if (data == "true") {
+                        // remove the td with the class task-column and remove
+                        let taskCell = $("[taskid=" + _taskid + "][class='task-column']");
+                        let removeCell = $("[taskid=" + _taskid + "][class='remove']");
+                        //check for other tasks in the row by selecting the tds with the class task-column
+                        let row = taskCell.parents("tr");
+                        console.log(row);
+                        console.log(row.children("td.time-column").length);
+                        while (row.children("td.time-column").length == 0) {
+                            row = row.prev();
+                        }
+                        console.log(row);
+                        let timeCell = row.children("td.time-column");
+                        let addCell = row.children("td.add");
+                        console.log(timeCell);
+                        if (timeCell.attr("rowspan") > 1) {
+                            timeCell.attr("rowspan", timeCell.attr("rowspan") - 1);
+                            taskCell.remove();
+                            removeCell.remove();
+                        }
+                        else {
+                            taskCell.remove();
+                            removeCell.remove();
+                            addCell.after('<td>');
+                            addCell.after('<td>');
+                        }
+                        console.log(timeCell);
+                    }
+                    else {
+                        console.log("failed to remove task");
+                        // show a warning?
+                    }
+                },
+                error: function () {
+                    alert('Error occured');
+                }
+            });
+        }
+    }
 
-    removeBoxes.forEach(box => {
+    const removeBoxes = document.querySelectorAll('.remove');
+    removeBoxes.forEach(box => { box.addEventListener('click', removeDisplayTask) });
+
+    const markTask = document.querySelectorAll('.mark-done');
+    console.log(markTask);
+
+    markTask.forEach(box => {
         box.addEventListener('click', function handleClick(event) {
+            if (this.checked) {
+                $(this).prop("checked", true);
+            }
+            else {
+                $(this).prop("checked", false);
+            }
+
+            console.log($(this).checked);
+
     @* Get the task id *@
                 let _taskid = $(this).attr("taskid");
             console.log(_taskid);
     @* Display a warning *@
-                if (confirm("Are you sure you want to remove this task?") == true) {
                 $.ajax({
                     type: "POST",
-                    url: "/PatientView?handler=DeleteTask",
+                    url: "/PatientView?handler=MarkTaskDone",
                     data: {
-                        taskid: _taskid
+                        taskid: _taskid,
+                        done: this.checked
                     },
                     headers: {
                         RequestVerificationToken:
                             $('input:hidden[name="__RequestVerificationToken"]').val()
                     },
                     success: function (data) {
-    @* update the table *@
-                            if (data == "false") {
-                            console.log("removed task");
-                            console.log("reload");
-                            location.reload();
+                        if (data == "True") {
+                            console.log("notifications enabled");
+                            $(this).prop('checked', true);
+                        }
+                        else if (data == "False") {
+                            $('this').prop('checked', false);
+                        }
+                        else if (data == "SessionExpired") {
+                            console.log("SessionExpired");
                         }
                     },
                     error: function () {
                         alert('Error occured');
                     }
                 });
-            }
     @* if clicked remove the task and refresh the page *@
             });
     });
@@ -437,7 +572,6 @@
             console.log(buttonCell);
 
     @* show the other buttons and hide edit*@
-
                 buttonCell.children(".save-task-button").show();
             buttonCell.children(".delete-task-button").show();
             $(this).hide();
@@ -481,31 +615,42 @@
                         $('input:hidden[name="__RequestVerificationToken"]').val()
                 },
                 success: function (data) {
-    @* update the table *@
-                            if (data == "false") {
-                        console.log("changed task");
-                        console.log("reload");
-                        location.reload();
+                    console.log(data);
+                    if (data == "false") {
+                    }
+                    else {
+                        let tableBody = $('.table tbody');
+                        let tableRows = tableBody.find('tr');
+                        for (let i = 0; i < tableRows.length; i++) {
+                            if (tableRows[i].querySelector("td.task-column") != null && data.some(id => tableRows[i].querySelector("td.task-column").getAttribute("taskid") == id)) {
+                                let cell = tableRows[i].querySelector("td.task-column");
+                                console.log(cell);
+                                cell.querySelector(".task-color-square").style.backgroundColor = _taskColour;
+                                cell.querySelector(".task-p").innerText = _taskName;
+                            }
+                        }
+                        console.log(tableRows);
+                        console.log(tableBody);
+                        console.log("task changed")
+                        //TODO: also needs to update the task list in the add task panel
                     }
                 },
                 error: function () {
                     alert('Error occured');
                 }
             });
-
-
-    @* this wont matter as the location is reloading, but keep incase we dont refresh page later on *@
-
-                buttonCell.children(".save-task-button").hide();
+            buttonCell.children(".save-task-button").hide();
             buttonCell.children(".delete-task-button").hide();
-            $(this).show();
+            buttonCell.children(".edit-task-button").show();
 
-    @* show the text and colour box *@
-                const taskName = tableRow.children(".task-text");
+            const taskName = tableRow.children(".task-text");
             const taskColour = tableRow.children(".task-colour");
             taskName.children("#task-p").show();
+            taskName.children("#task-p").text(_taskName);
+            taskName.children("#task-input").val(_taskName);
             taskName.children("#task-input").hide();
             taskColour.children().prop("disabled", true);
+            taskColour.children().val(_taskColour);
         });
     });
 
@@ -533,31 +678,69 @@
                         $('input:hidden[name="__RequestVerificationToken"]').val()
                 },
                 success: function (data) {
-    @* update the table *@
-                            if (data == "false") {
-                        console.log("deleted task");
-                        console.log("reload");
-                        location.reload();
+                    console.log(data);
+                    if (data == "false") {
+                    }
+                    else {
+                        tableRow.remove();
+                        let tableBody = $('.table tbody');
+                        let tableRows = tableBody.find('tr');
+                        for (let i = 0; i < tableRows.length; i++) {
+                            if (tableRows[i].querySelector("td.task-column") != null && data.some(id => tableRows[i].querySelector("td.task-column").getAttribute("taskid") == id)) {
+                                // if this row has a time-column, check if the next row is a time-column
+                                if (tableRows[i].querySelector("td.time-column") != null) {
+                                    // console.log("table row has a time-column");
+                                    if (tableRows[i + 1].querySelector("td.time-column") != null) {
+                                        // console.log("next row has a time-column");
+                                        let td1 = document.createElement("td");
+                                        let td2 = document.createElement("td");
+                                        // remove the task and remove cells in the row
+                                        let addCell = tableRows[i].querySelector("td.add");
+                                        tableRows[i].querySelector("td.task-column").remove();
+                                        tableRows[i].querySelector("td.remove").remove();
+                                        addCell.after(td1);
+                                        addCell.after(td2);
+                                    }
+                                    else {
+                                        // no time-column after this means that the next row contains another task belonging to the same time
+                                        // get the 
+                                        let addCell = tableRows[i].querySelector("td.add");
+                                        tableRows[i].querySelector("td.task-column").remove();
+                                        tableRows[i].querySelector("td.remove").remove();
+
+                                        let oldRow = tableRows[i + 1];
+                                        while (oldRow.childNodes.length > 0) {
+                                            addCell.after(oldRow.childNodes[oldRow.childNodes.length - 1]);
+                                        }
+                                    }
+                                }
+                                else {
+                                    // find the row containing the time-column
+                                    let row = $(tableRows[i]);
+                                    while (row.children("td.time-column").length == 0) {
+                                        row = row.prev();
+                                    }
+                                    let timeCell = row.children("td.time-column");
+                                    let addCell = row.children("td.add");
+                                    if (timeCell.attr("rowspan") > 1) {
+                                        // console.log("adjust rowspan");
+                                        timeCell.attr("rowspan", timeCell.attr("rowspan") - 1);
+                                        addCell.attr("rowspan", addCell.attr("rowspan") - 1);
+                                        tableRows[i].remove();
+                                    }
+                                }
+                            }
+                        }
+                        // console.log(tableRows);
+                        // console.log(tableBody);
+                        // console.log("task changed")
                     }
                 },
                 error: function () {
                     alert('Error occured');
                 }
             });
-
-
-    @* this wont matter as the location is reloading, but keep incase we dont refresh page later on *@
-
-                buttonCell.children(".save-task-button").hide();
-            buttonCell.children(".delete-task-button").hide();
-            $(this).show();
-
-    @* show the text and colour box *@
-                const taskName = tableRow.children(".task-text");
-            const taskColour = tableRow.children(".task-colour");
-            taskName.children("#task-p").show();
-            taskName.children("#task-input").hide();
-            taskColour.children().prop("disabled", true);
+            //TODO: also needs to update the task list in the add task panel
         });
     });
 
@@ -585,8 +768,7 @@
                     $('input:hidden[name="__RequestVerificationToken"]').val()
             },
             success: function (data) {
-    @* update the table *@
-                            if (data == "false") {
+                if (data == "false") {
                     console.log("deleted task");
                     console.log("reload");
                     location.reload();
@@ -604,10 +786,11 @@
         buttonCell.children(".delete-task-button").hide();
         $(this).show();
 
-    @* show the text and colour box *@
-                const taskName = tableRow.children(".task-text");
+        const taskName = tableRow.children(".task-text");
         const taskColour = tableRow.children(".task-colour");
         taskName.children("#task-p").show();
+        taskName.children("#task-p").val(_taskName);
+        taskName.children("#task-input").val(_taskName);
         taskName.children("#task-input").hide();
         taskColour.children().prop("disabled", true);
     });
@@ -862,7 +1045,6 @@
         if (this.checked) {
             var returnVal = confirm("Are you sure you want to enable notifications?");
             $(this).prop("checked", returnVal);
-
         }
         else {
             var returnVal = confirm("Are you sure you want to disable notifications?");
@@ -872,7 +1054,6 @@
             else {
                 $(this).prop("checked", true);
             }
-
         }
 
         $.ajax({

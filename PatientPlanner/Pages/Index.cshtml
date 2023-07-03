@@ -6,8 +6,8 @@
 }
 
 <script language="JavaScript" type="text/javascript" src="~/js/HidePage.js?n=4"></script>
-<script language="JavaScript" type="text/javascript" src="~/js/CreateDevice.js?n=6"></script>
-<script language="JavaScript" type="text/javascript" src="~/js/site.js?n=4"></script>
+<script language="JavaScript" type="text/javascript" src="~/js/CreateDevice.js?n=5"></script>
+<script language="JavaScript" type="text/javascript" src="~/js/site.js?n=5"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
 
 @Html.AntiForgeryToken()
@@ -61,53 +61,57 @@
 
 @if (Model.times.Count > 0)
 {
-  <table class="table">
-    <thead>
-      <tr>
-        <th></th>
-        @foreach (var item in Model.Patients)
-        {
-          <th>
-            @Html.DisplayFor(modelItem => item.RoomNumber)
-          </th>
-        }
-      </tr>
-    </thead>
-    <tbody>
-      @* Loop over the time period *@
-      @foreach (var time in Model.times)
-      {
-        <tr>
-          <td>
-            @Html.DisplayFor(modelItem => time)
-          </td>
-          @* Loop over the patients *@
-          @foreach (var item in Model.Patients)
-          {
-            <td>
-              @* Gets the list of tasks for the patient for the specific time period *@
-              @{
-                var taskList = Model.taskList.Where(t => t.DueTime == time && t.PatientID == item.PatientID);
-              }
+<div style="display: block; overflow-x: auto; white-space: nowrap;">
+        <table class="table time-table">
+            <thead>
+                <tr>
+                    <th class="title">Time</th>
+                    @foreach (var item in Model.Patients)
+                    {
+                        <th class="title">
+                            @Html.DisplayFor(modelItem => item.RoomNumber)
+                        </th>
+                    }
+                </tr>
+            </thead>
+            @* cant use overflow-x, possibly change other elements to match? *@
+            @* seems like div is messing with the stickiness no matter what. sticky works when there is *@
+            <tbody>
+                @* Loop over the time period *@
+                @foreach (var time in Model.times)
+                {
+                    <tr id="@time">
+                        <td>
+                            @Html.DisplayFor(modelItem => time)
+                        </td>
+                        @* Loop over the patients *@
+                        @foreach (var item in Model.Patients)
+                        {
+                            <td>
+                                @* Gets the list of tasks for the patient for the specific time period *@
+                                @{
+                                    var taskList = Model.taskList.Where(t => t.DueTime == time && t.PatientID == item.PatientID);
+                                }
 
-              @foreach (var task in taskList)
-              {
-                <div>
-                  <div
-                    style='height: 15px; width: 15px; display: inline-block; margin-bottom: -1px; background-color: @(task.TaskColour)'>
-                  </div>
-                  <p style='display: inline-block; margin: 0px;'>@Html.DisplayFor(modelItem => task.TaskName)</p>
+                                @foreach (var task in taskList)
+                                {
+                                    <div taskid="@(task.PatientDisplayTaskID)" completed="@(task.Completed.ToString())"
+                                        style="width: fit-content; padding: 5px;">
+                                        <div class=" color-square" style='background-color: @(task.TaskColour)'>
+                                    </div>
+                                    <p style='display: inline-block; margin: 0px;'>@Html.DisplayFor(modelItem => task.TaskName)</p>
                 </div>
-              }
+                                }
             </td>
-          }
+                        }
         </tr>
-      }
+                }
 
     </tbody>
-  </table>
-}
+    </table>
+    </div>
 
+}
 <script>
   $(document).ready(function () {
     //start the timer for the session timeout

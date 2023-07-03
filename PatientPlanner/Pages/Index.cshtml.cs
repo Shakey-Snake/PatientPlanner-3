@@ -62,7 +62,7 @@ public class IndexModel : PageModel
                 // Note: Not sure what to fix here.
                 if (settingsProfile == null)
                 {
-                    SettingsProfile settings = new SettingsProfile(device.ID, 30, new TimeSpan(6, 0, 0), new TimeSpan(18, 0, 0), true);
+                    SettingsProfile settings = new SettingsProfile(device.ID, 30, new TimeSpan(6, 0, 0), new TimeSpan(18, 0, 0), true, 0);
 
                     _context.SettingsProfiles.Add(settings);
 
@@ -103,7 +103,38 @@ public class IndexModel : PageModel
         }
     }
 
-    public async Task<IActionResult> OnPostCheckSub(string Token)
+    public async Task<IActionResult> OnGetTasks()
+    {
+        if (!string.IsNullOrEmpty(HttpContext.Session.GetString(SessionEndPoint)))
+        {
+            var endpoint = HttpContext.Session.GetString(SessionEndPoint);
+            if (_context.Devices != null)
+            {
+                Device device = _context.Devices.FirstOrDefault(device => device.PushP256DH == endpoint);
+
+                //Get a list of all of the devices patients
+
+                if (_context.Patients != null)
+                {
+                    Patients = await _context.Patients.Where(p => p.DeviceID == device.ID).ToListAsync();
+                }
+
+                foreach (Patient patient in Patients)
+                {
+                    taskList.AddRange(await _context.PatientDisplayTasks.Where(t => t.PatientID == patient.PatientID).ToListAsync());
+                }
+
+                if (taskList != null)
+                {
+                    return new JsonResult(taskList);
+                }
+            }
+        }
+        return new JsonResult("False");
+    }
+
+    public async Task<IActionResult> OnPostCheckSub(string PushEndpoint, string PushP256DH, string PushAuth, int TimeOffSet)
+    
     {
         Device device = _context.Devices.FirstOrDefault(d => d.Token == Token);
         Console.WriteLine(device);
@@ -164,7 +195,7 @@ public class IndexModel : PageModel
 
             // await _context.SaveChangesAsync();
 
-            SettingsProfile settings = new SettingsProfile(Device.ID, 30, new TimeSpan(6, 0, 0), new TimeSpan(18, 0, 0), false);
+            SettingsProfile settings = new SettingsProfile(Device.ID, 30, new TimeSpan(6, 0, 0), new TimeSpan(18, 0, 0), false, TimeOffSet);
 
             _context.SettingsProfiles.Add(settings);
 

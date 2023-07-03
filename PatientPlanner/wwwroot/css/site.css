@@ -25,6 +25,50 @@ body {
   width: 40px;
 }
 
+th, td {
+  min-width: 80px;
+}
+
+.time-table th:first-child {
+  width: 80px;
+}
+
+.time-table td:first-child {
+  border-right: none;
+}
+
+.time-table td:last-child {
+  border-right: none;
+}
+
+.time-table td {
+  border-right: solid 1px rgb(222, 226, 230); 
+}
+
+.time-table  {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.color-square {
+  height: 15px;
+  width: 15px;
+  display: inline-block;
+  margin-bottom: -1px;
+  border-radius: 3px;
+}
+
+/* .time-table td {
+  border-right: solid 1px #f00; 
+  border-left: solid 1px #f00;
+} */
+
+/* TODO: Add in a sticky using similar tatics to this: 
+https://codepen.io/dannievinther/pen/pGdjPV */
+.title  {
+  text-align: center;
+}
+
 #add-patient-form{
   padding: 10px;
   border-radius: 15px;
@@ -41,6 +85,11 @@ body {
   list-style-type: none;
   padding: 0;
   overflow: auto;
+}
+
+.patient-btn {
+  background-color: transparent;
+  border: none;
 }
 
 #nav-patients li {

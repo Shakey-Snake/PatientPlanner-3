@@ -17,7 +17,7 @@ public class TimedHostedService : IHostedService, IDisposable
     private readonly IConfiguration _configuration;
     private Timer? _alarmTimer = null;
     private Timer? _reminderTimer = null;
-    private Timer? _testGoogle = null;
+    private TimeSpan localTime = DateTime.UtcNow.TimeOfDay;
 
     public TimedHostedService(IDbContextFactory<TimetableContext> contextFactory, ILogger<TimedHostedService> logger, IConfiguration configuration)
     {
@@ -35,7 +35,7 @@ public class TimedHostedService : IHostedService, IDisposable
 
         // _alarmTimer = new Timer(SendAlarmNotification, null, TimeSpan.Zero,
         //     TimeSpan.FromSeconds(10));
-
+        
         // _reminderTimer = new Timer(SendReminderNotification, null, TimeSpan.Zero,
         //     TimeSpan.FromSeconds(10));
 

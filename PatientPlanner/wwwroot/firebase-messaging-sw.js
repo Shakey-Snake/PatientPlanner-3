@@ -35,14 +35,26 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage(function(payload) {
 	console.log('[firebase-messaging-sw.js] Received background message ', payload);
 	// Customize notification here
-	let title = payload["data"[title]];
-	let body = payload["data"[body]];
-	const notificationTitle = title;
+	const notificationTitle = payload.data.title;
 	const notificationOptions = {
-		body: body,
-		icon: '/firebase-logo.png'
+		body: payload.data.body,
+		icon: '/firebase-logo.png',
+		data: { url:payload.data.click_action }, //the url which we gonna use later
+    	actions: [{action: "open_url", title: "Open Planner"}]
 	};
 
 	self.registration.showNotification(notificationTitle,
 		notificationOptions);
-	});
+});
+
+self.addEventListener('notificationclick', function(event) {
+	switch(event.action){
+	  case 'open_url':
+	  clients.openWindow(event.notification.data.url); //which we got from above
+	  break;
+	  case 'any_other_action':
+	  clients.openWindow("https://www.example.com");
+	  break;
+	}
+  }
+  , false);

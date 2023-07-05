@@ -6,7 +6,7 @@ using PatientPlanner.Data;
 using PatientPlanner.Services;
 using Quartz;
 
-string credential_path = @"C:\Users\Reece\PatientPlanner\patientplanner-1d025-firebase-adminsdk-a0pus-d3041de2cf.json";
+string credential_path = @"C:\Users\Reece\PatientPlanner-3\patientplanner-1d025-firebase-adminsdk-a0pus-d3041de2cf.json";
 System.Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credential_path);
 
 var defaultApp = FirebaseApp.Create(new AppOptions()

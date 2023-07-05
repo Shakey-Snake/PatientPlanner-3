@@ -26,13 +26,31 @@ public class SendNotifications : IJob
         foreach (Device device in devices)
         {
             var patients = _context.Patients.Where(p => p.DeviceID == device.ID).ToList();
+            var settings = _context.SettingsProfiles.FirstOrDefault(s => s.DeviceID == device.ID);
+
+            // localTime = DateTime.UtcNow.TimeOfDay;
+
+            var adjustedTime = new TimeSpan(0, 0, 0);
+
+            if (settings.TimezoneDiff < 0)
+            {
+                adjustedTime = localTime.Subtract(new TimeSpan(0, Math.Abs(settings.TimezoneDiff), 0));
+                if (adjustedTime < TimeSpan.Zero)
+                {
+                    adjustedTime = new TimeSpan(24, 0, 0).Add(adjustedTime);
+                }
+            }
+            else
+            {
+                adjustedTime = new TimeSpan(0, settings.TimezoneDiff, 0).Add(localTime);
+            }
 
             List<PatientDisplayTask> alarmTaskList = new List<PatientDisplayTask>();
             List<PatientDisplayTask> reminderTaskList = new List<PatientDisplayTask>();
 
             foreach (Patient patient in patients)
             {
-                var pdt = _context.PatientDisplayTasks.ToList().Where(t => t.PatientID == patient.PatientID && t.DueTime.Hours == DateTime.Now.TimeOfDay.Hours && t.DueTime.Minutes == DateTime.Now.TimeOfDay.Minutes);
+                var pdt = _context.PatientDisplayTasks.ToList().Where(t => t.PatientID == patient.PatientID && t.DueTime.Hours == adjustedTime.Hours && t.DueTime.Minutes == adjustedTime.Minutes && t.Completed == false);
                 alarmTaskList.AddRange(pdt);
 
                 if (alarmTaskList.FirstOrDefault(pt => pt.PatientID == patient.PatientID) != null)
@@ -40,45 +58,47 @@ public class SendNotifications : IJob
                     continue;
                 }
 
-                pdt = _context.PatientDisplayTasks.ToList().Where(t => t.PatientID == patient.PatientID && t.DueTime >= DateTime.Now.TimeOfDay.Subtract(new TimeSpan(2, 0, 0))).ToList();
+                pdt = _context.PatientDisplayTasks.ToList().Where(t => t.PatientID == patient.PatientID && t.DueTime >= adjustedTime.Subtract(new TimeSpan(2, 0, 0)) && t.DueTime < adjustedTime && t.Completed == false).ToList();
                 reminderTaskList.AddRange(pdt);
 
                 // check for night shift reminders
                 // EX: time is 1, minus 2 is 23, therefore it would be larger so it needs to check for night shifts aswell as regular
-                if (DateTime.Now.TimeOfDay.Subtract(new TimeSpan(2, 0, 0)) > DateTime.Now.TimeOfDay)
+                if (adjustedTime.Subtract(new TimeSpan(2, 0, 0)) > adjustedTime)
                 {
                     // find the diff from now to 0
-                    var diff = new TimeSpan(0, 0, 0).Subtract(DateTime.Now.TimeOfDay);
+                    var diff = new TimeSpan(0, 0, 0).Subtract(adjustedTime);
                     // gives a value between 0 and 2, use this to find the upper limit of times
                     var upperTimeSpan = new TimeSpan(0, 0, 0).Subtract(diff);
                     pdt = _context.PatientDisplayTasks.Where(t => t.PatientID == patient.PatientID && t.DueTime >= upperTimeSpan).ToList();
                     reminderTaskList.AddRange(pdt);
                 }
+            }
 
-                if (alarmTaskList.Count != 0)
+            if (alarmTaskList.Count != 0)
+            {
+                foreach (var task in alarmTaskList)
                 {
-                    foreach (var task in alarmTaskList)
-                    {
-                        var data = new Dictionary<string, string>()
+                    var data = new Dictionary<string, string>()
                         {
                             { "title", "A patient requires attention" },
                             { "body", "Patient " + patients.Find(p => p.PatientID == task.PatientID).RoomNumber + " has " + task.TaskName + " due now at " + task.DueTime.ToString(@"hh\:mm")},
+                            { "click_action", "https://localhost:7039/Index" },
                         };
-                        NotificationService.Send(device, data);
-                    }
+                    NotificationService.Send(device, data);
                 }
+            }
 
-                if (reminderTaskList.Count != 0)
+            if (reminderTaskList.Count != 0)
+            {
+                foreach (var task in reminderTaskList)
                 {
-                    foreach (var task in reminderTaskList)
-                    {
-                        var data = new Dictionary<string, string>()
+                    var data = new Dictionary<string, string>()
                         {
                             { "title", "It looks like you missed a patient" },
-                            { "body", "Patient " + patients.Find(p => p.PatientID == task.PatientID).RoomNumber + " was due " + task.TaskName + " " + DateTime.Now.TimeOfDay.Subtract(task.DueTime).ToString(@"hh\:mm") + " hours ago"},
+                            { "body", "Patient " + patients.Find(p => p.PatientID == task.PatientID).RoomNumber + " was due " + task.TaskName + " " + adjustedTime.Subtract(task.DueTime).ToString(@"hh\:mm") + " hours ago"},
+                            { "click_action", "https://localhost:7039/Index" },
                         };
-                        NotificationService.Send(device, data);
-                    }
+                    NotificationService.Send(device, data);
                 }
             }
         }

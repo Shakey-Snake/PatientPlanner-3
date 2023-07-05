@@ -44,70 +44,79 @@ function taskReminderTimer(){
 
 function taskReminder(){
     // NOTE: I dislike the number of loops but this is how the table is structured
-    var tableRows = $('tbody').find('tr');
+    var tableRows = $('.tt-row');
     let currentTime = new Date().toString().slice(16, 21);
     // let currentTime = "01:00:00";
     // console.log(currentTime);
     // console.log(tableRows);
     for (let i = 0; i < tableRows.length; i++) {
         // greater than 1 means patients exist
-        if ($(tableRows[i]).children("td").length > 1) {
-            let time = $(tableRows[i]).children("td").html().replace(/ /g, '').slice(1, 6);
-            console.log(time);
+        //console.log(tableRows[i]);
+        if ($(tableRows[i]).children(".heading").length > 1){
+            continue;
+        }
+        if ($(tableRows[i]).children("div").length > 1) {
+            let time = $($(tableRows[i]).children()[0]).attr('id');
+            //console.log(time);
             let minuteDiff = (currentTime.split(":")[0] * 60 - time.split(":")[0] * 60) + (currentTime.split(":")[1] - time.split(":")[1]);
             // NIGHTSHIFT
+            // console.log(minuteDiff);
             if (minuteDiff < 0) {
                 minuteDiff = 1440 + minuteDiff;
-                console.log("nighttime " + minuteDiff);
+                // console.log("nighttime " + minuteDiff);
+                // NOTE: this could break the nighttime calculation
+                if (minuteDiff < 1320) {
+                    break;
+                }
             }
-            if (minuteDiff > 120) {
+            // TODO: set each task's background to default
+            if (minuteDiff > 120 && $(tableRows[i]).attr('marked') == "True") {
+                let patients = $(tableRows[i]).children("div");
+                for (let j = 1; j < patients.length; j++) {
+                    console.log($(patients[j]).children());
+                    // if there are tasks for the patient then get the time from the first td
+                    let tasks = $(patients[j]).children();
+                    //console.log(tasks);
+                    if (tasks.length > 0) {
+                        for (let k = 0; k < tasks.length; k++) {
+                            $(tasks[k]).css('background-color', 'rgb(255, 255, 255)');
+                        }
+                    }
+                }
+                $(tableRows[i]).attr('marked', "False");
                 continue;
             }
             // DAYTIME: if the current time is less than the cell time  
-            // if the current time is greater than 
-            let patients = $(tableRows[i]).children("td");
-            for (let j = 1; j < patients.length; j++) {
-                // console.log($(patients[j]).children());
-                // if there are tasks for the patient then get the time from the first td
-                let tasks = $(patients[j]).children();
-                if (tasks.length > 0) {
-                    for (let k = 0; k < tasks.length; k++) {
-                        // check if the task is checked off
-                        let taskid = $(tasks[k]).attr("taskid");
-                        let checked = $(tasks[k]).attr("completed");
-                        // console.log(task);
-                        if (checked == "False") {
-                            $(tasks[k]).css('background-color', 'rgb(227, 66, 52, 0.75)');
+            // if the current time is greater than
+            if (minuteDiff <= 120){
+                //console.log(patients);
+                let patients = $(tableRows[i]).children("div");
+                for (let j = 1; j < patients.length; j++) {
+                    // console.log($(patients[j]).children());
+                    // if there are tasks for the patient then get the time from the first td
+                    let tasks = $(patients[j]).children();
+                    //console.log(tasks);
+                    if (tasks.length > 0) {
+                        for (let k = 0; k < tasks.length; k++) {
+                            // check if the task is checked off
+                            let taskid = $(tasks[k]).attr("taskid");
+                            let checked = $(tasks[k]).attr("completed");
+                            // console.log(tasks[k]);
+                            if (checked == "False") {
+                                // console.log(tasks[k]);
+                                $(tasks[k]).css('background-color', 'rgb(227, 66, 52, 0.75)');
+                            }
+                            // console.log(tasks[k]);
                         }
-                        // console.log(tasks[k]);
+                        $(tableRows[i]).attr('marked', "True");
                     }
                 }
             }
+            
+            
+            
         }
     }
-    // $.ajax({
-    //     type: "GET",
-    //     url: "/Index?handler=Tasks",
-    //     headers: {
-    //         RequestVerificationToken:
-    //             $('input:hidden[name="__RequestVerificationToken"]').val()
-    //     },
-    //     success: function (data) {
-    //         console.log(data);
-    //         if (data == "False") {
-
-    //         }
-    //         else if (data == "SessionExpired") {
-    //             console.log("SessionExpired");
-    //         }
-    //         else {
-                
-    //         }
-    //     },
-    //     error: function () {
-    //         alert('Error occured');
-    //     }
-    // });
 }
 
 // creates a line that will show what the time is now
@@ -116,9 +125,12 @@ function updateTimeLine(){
     // get the current time
     let currentTime = new Date().toString().slice(16, 25);
     // get the current interval by getting the id of the top two tr and finding the minute diff
-    let tableRows = $('tbody').children("tr");
-    let tr1 = $(tableRows[0]).attr("id");
-    let tr2 = $(tableRows[1]).attr("id");
+    let tableRows = $('.tt-row');
+    console.log(tableRows);
+    let tr1 = $($(tableRows[1]).children()[0]).attr('id');
+    console.log(tr1);
+    let tr2 = $($(tableRows[2]).children()[0]).attr('id');
+    console.log(tr2);
     //could be an issue if tr1 is larger than tr2
     let interval = (tr2.split(":")[0]*60 - tr1.split(":")[0]*60) + (tr2.split(":")[1] - tr1.split(":")[1]);
     if (interval < 0){
@@ -133,13 +145,15 @@ function updateTimeLine(){
         let tableRow = null;
         //find the table row that has the matching hour
     loopHour:
-        for (let i = 0; i < tableRows.length; i++){
-            if ($(tableRows[i]).attr("id").split(":")[0] == currentTime.split(":")[0]){
+        for (let i = 1; i < tableRows.length; i++){
+            //console.log($($(tableRows[i]).children()[0]).attr('id'));
+            if ($($(tableRows[i]).children()[0]).attr('id').split(":")[0] == currentTime.split(":")[0]){
                 let rounded = Math.floor(currentTime.split(":")[1] / interval) * interval;
                 // console.log(rounded);
                 let currRow = $(tableRows[i]);
+                //console.log(currRow);
                 for (let j = 0; j < 60/interval; j += interval){
-                    if(currRow.attr("id").split(":")[1] == rounded){
+                    if($(currRow.children("div")[0]).attr("id").split(":")[1] == rounded){
                         // console.log("THIS " + rounded + " " + currRow.attr("id").split(":")[1]);
                         tableRow = currRow;
                         break loopHour;
@@ -152,25 +166,26 @@ function updateTimeLine(){
             return;
         }
         // set the blue line
-        // console.log($(tableRow.children("td")[0]));
+        //console.log($(tableRow.children("td")[0]));
         let currentMinutes = currentTime.split(":")[1];
         let currentSeconds = currentTime.split(":")[2];
 
-        let width = $(tableRow).outerWidth() - $(tableRow.children("td")[0]).outerWidth();
-        let height = $(tableRow.children("td")[0]).outerHeight();
+        let width = $(tableRow).outerWidth() - $(tableRow.children("div")[0]).outerWidth();
+        let height = $(tableRow.children("div")[0]).outerHeight();
 
         // TODO: adjust by seconds also
         let heightAjustSeconds = (height / interval) * currentSeconds / 60;
         // console.log(heightAjustSeconds);
         let heightAdjust = (height / interval) * (currentMinutes - (Math.floor(currentMinutes / interval) * interval)) + heightAjustSeconds;
 
-        let _top = $(tableRow.children("td")[0]).offset().top + heightAdjust;
-        let _left = $(tableRow.children("td")[0]).offset().left + $(tableRow.children("td")[0]).outerWidth();
+        let _top = $(tableRow.children("div")[0]).offset().top + heightAdjust;
+        let _left = $(tableRow.children("div")[0]).offset().left + $(tableRow.children("div")[0]).outerWidth();
+        //console.log(_top);
         $("#time-bar").remove();
         jQuery('<div>', {
             id: "time-bar",
             style: 'width: ' + width + 'px; height: ' + height + 'px; border-top: 3px solid; position: absolute; border-top-color: rgb(227, 66, 52, 0.9)'
-        }).appendTo('table').offset({ top: _top, left: _left });
+        }).appendTo('body').offset({ top: _top, left: _left });
         // console.log(tableRow);
     }
 }

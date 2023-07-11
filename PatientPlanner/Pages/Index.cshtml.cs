@@ -124,9 +124,15 @@ public class IndexModel : PageModel
                     taskList.AddRange(await _context.PatientDisplayTasks.Where(t => t.PatientID == patient.PatientID).ToListAsync());
                 }
 
+                taskList = taskList.OrderBy(x => x.DueTime).ToList();
+
                 if (taskList != null)
                 {
-                    return new JsonResult(taskList);
+                    return new JsonResult(new
+                    {
+                        patients = Patients,
+                        taskList = taskList
+                    });
                 }
             }
         }

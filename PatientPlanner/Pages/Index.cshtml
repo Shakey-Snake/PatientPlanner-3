@@ -14,9 +14,12 @@
 
 @Html.AntiForgeryToken()
 
-<input id="PushEndpoint" name="PushEndpoint" readonly required hidden />
-<input class="PushP256DH" name="PushP256DH" readonly required hidden />
-<input id="PushAuth" name="PushAuth" readonly required hidden />
+@if (Model.settingsProfile != null)
+{
+	<input id="start-time" value="@(Model.settingsProfile.StartTime)" readonly required hidden />
+	<input id="end-time" value="@(Model.settingsProfile.EndTime)" readonly required hidden />
+	<input id="interval" value="@(Model.settingsProfile.Interval)" readonly required hidden />
+}
 
 <div class="reminders">
 	<div id="denied-div" class="critical-warning" style="display: none;">
@@ -60,11 +63,12 @@
 	</div>
 </div>
 
+
 <div class="text-center">
 	<h1 class="display-4">Timetable</h1>
 </div>
 
-<div>
+<div id="ghost-task" style="display: none;">
 	<p>You have tasks outside of your shift time,
 		these will appear as ghosts in the future but for now this warning will stand</p>
 </div>
@@ -78,6 +82,8 @@
 </svg>
 
 @if (Model.times.Count > 0)
+
+
 {
 	<div class="wrapper">
 		<div class="tt">
@@ -117,7 +123,7 @@
 						{
 							var taskList = Model.taskList.Where(t => t.DueTime == time && t.PatientID == item.PatientID);
 
-							<div class="entry">
+							<div class="entry" id="@item.PatientID">
 								@foreach (var task in taskList)
 								{
 									<div class="details" completed="@(task.Completed.ToString())"
@@ -142,7 +148,7 @@
 		initSessionMonitor();
 		timeLineTimer();
 		taskReminderTimer();
-		checkTasks(@(Model.taskList), @(Model.settingsProfile));
+		checkTasks();
 	});
 </script>
 

@@ -67,6 +67,12 @@
     z-index: 1;
     box-shadow: 0 10px 50px rgba(0, 0, 0, 0.04);
   }
+
+  .ghost {
+    opacity: 0.5;
+    filter: alpha(opacity = 0.5);
+    filter: progid:DXImageTransform.Microsoft.Alpha(opacity=0.5);
+  }
   
   .tt-rows,
   .scroller {

@@ -89,8 +89,8 @@ function taskReminder(){
             // DAYTIME: if the current time is less than the cell time  
             // if the current time is greater than
             if (minuteDiff <= 120){
-                //console.log(patients);
                 let patients = $(tableRows[i]).children("div");
+                // console.log(patients);
                 for (let j = 1; j < patients.length; j++) {
                     // console.log($(patients[j]).children());
                     // if there are tasks for the patient then get the time from the first td
@@ -126,11 +126,11 @@ function updateTimeLine(){
     let currentTime = new Date().toString().slice(16, 25);
     // get the current interval by getting the id of the top two tr and finding the minute diff
     let tableRows = $('.tt-row');
-    console.log(tableRows);
+    //console.log(tableRows);
     let tr1 = $($(tableRows[1]).children()[0]).attr('id');
-    console.log(tr1);
+    //console.log(tr1);
     let tr2 = $($(tableRows[2]).children()[0]).attr('id');
-    console.log(tr2);
+    //console.log(tr2);
     //could be an issue if tr1 is larger than tr2
     let interval = (tr2.split(":")[0]*60 - tr1.split(":")[0]*60) + (tr2.split(":")[1] - tr1.split(":")[1]);
     if (interval < 0){
@@ -192,7 +192,7 @@ function updateTimeLine(){
 
 function checkIdleTimeout() {
      // $('#sessionValue').val() * 60000;
-    var idleTime = (parseInt(localStorage.getItem('sessIdleTimeCounter')) + (sessServerAliveTime));
+    let idleTime = (parseInt(localStorage.getItem('sessIdleTimeCounter')) + (sessServerAliveTime));
     // console.log('check idle timeout');
     // if the timeout is reached, then the session is expired and the user will be logged out.
     // TODO: change this to non interuptive behavior
@@ -216,4 +216,170 @@ function checkIdleTimeout() {
 
 function refreshPage() {
     location.reload();
+}
+
+function checkTasks() {
+    // ajax the task list and the settings
+    const startTime = $("#start-time").attr("value");
+    const endTime = $("#end-time").attr("value"); 
+    const interval = $("#interval").attr("value");
+    console.log(startTime, endTime, interval);
+    // check if its a night shift
+    let tasks = [];
+    $.ajax({
+        type: "GET",
+        // Should it go to the index? Or is there a better way?
+        url: "/Index?handler=Tasks",
+        headers: {
+            RequestVerificationToken:
+                $('input:hidden[name="__RequestVerificationToken"]').val()
+        },
+        success: function (data) {
+            // NOTE: COULD BE BROKEN DOWN INTO SEPARATE FUNCTIONS
+            if (data != "false") {
+                showGhostTaskNotification();
+                // NOTE: Could have cross compatibility difficulties if the order changes
+                let patients = data.patients;
+                tasks = data.taskList;
+                //console.log(data);
+                //console.log(startTime);
+                let row = $(".tt-rows").children()[0];
+                if (startTime < endTime) {
+                    console.log(tasks);
+                    console.log('check tasks');
+                    for (let i = 0; i < tasks.length; i++) {
+                        //console.log(tasks[i].dueTime);
+                        if (tasks[i].dueTime < startTime){
+                            //check if a class has already been created
+                            //console.log(row);
+                            //console.log($("#06:00:00"));
+                            if ($(row).hasClass("ghost") && $($(row).children()[0]).attr("id") == tasks[i].dueTime ){
+                                console.log("check");
+                                ghostRow(false, tasks[i], patients, row);
+                            }
+                            else {
+                                let newRow = ghostRow(true, tasks[i], patients);
+                                if ($(row).hasClass("ghost")){
+                                    $(row).after(newRow);
+                                }
+                                else {
+                                    $(row).before(newRow);
+                                }
+                                row = newRow;
+                            }
+                            // create the row using a custom function
+                        }
+                        else if (tasks[i].dueTime > endTime){
+                            row = $(".tt-rows").children().last();
+                            // console.log(row);
+                            if ($(row).hasClass("ghost") && $($(row).children()[0]).attr("id") == tasks[i].dueTime ){
+                                //console.log("check");
+                                ghostRow(false, tasks[i], patients, row);
+                            }
+                            else {
+                                //create the row using a custom function
+                                let newRow = ghostRow(true, tasks[i], patients);
+                                $(row).after(newRow);
+                            }
+                        }
+                        else if (tasks[i].dueTime > startTime && tasks[i].dueTime < endTime){
+                            let tableBodyRows = $(".tt-rows").children();
+                            //check for intervals
+                            let minutes = tasks[i].dueTime.split(":")[1];
+                            if (minutes > 0){
+                                let modulo = 0;
+                                if (minutes > interval){
+                                    modulo = minutes / interval;
+                                }
+                                else {
+                                    modulo = interval / minutes;
+                                }
+                                
+                                if (modulo % 1 != 0){
+                                    console.log(modulo);
+                                    console.log("DUE TIME: " + tasks[i].dueTime);
+                                    //set the row to the time closest to the current time by finding the
+                                    for (let j = 0; j < tableBodyRows.length; j++){
+                                        let id = $($(tableBodyRows[j]).children()[0]).attr("id");
+                                        console.log("ID: " + id);
+                                        console.log("DUE TIME: " + tasks[i].dueTime);
+                                        if (id.split(":")[0] == tasks[i].dueTime.split(":")[0] && id.split(":")[1] == "00"){
+                                            let row = $(tableBodyRows[j]);
+                                            while ($($(row).children()[0]).attr("id") < tasks[i].dueTime){
+                                                console.log("ROW");
+                                                console.log($(row).children()[0]);
+                                                row = row.next();
+                                            }
+                                            console.log("FINAL ROW:");
+                                            
+                                            console.log($(row).children()[0]);
+                                            //checks if the row already exists
+                                            if ($($(row).children()[0]).attr("id") == tasks[i].dueTime){
+                                                ghostRow(false, tasks[i], patients, row);
+                                            }
+                                            else {
+                                                // insert the new ghost row above the final row
+                                                let newRow = ghostRow(true, tasks[i], patients);
+                                                $(row).before(newRow);
+                                            }
+                                            break;
+                                        }
+                                    }
+                                    
+                                }
+                            }
+                        }
+                    }
+                }
+                // TODO: Compatibility for night time
+                else {
+
+                }
+            }
+            
+        },
+        error: function () {
+            alert('Error occured');
+        }
+    });
+}
+
+function ghostRow(newRow, task, patients, row) {
+    if (newRow == true) {
+        //console.log(task);
+        let divRow = $("<div>", {"class": "ghost tt-row", style: "opacity: 0.5; background-color: grey"});
+        let divTime = $("<div>", {id: task.dueTime, "class": "time entry"});
+        divTime.appendTo(divRow);
+        let time = $("<time>").text(task.dueTime);
+        time.appendTo(divTime);
+        for (let i = 0;  i < patients.length; i++){
+            let divCell = $("<div>", {id: patients[i].roomNumber, "class": "entry"});
+            divCell.appendTo(divRow);
+            //console.log(patients[i])
+            if (task.patientID == patients[i].patientID){
+                // NOTE: Need to capitalize the first letter for red box to work
+                let completed = task.completed.toString();
+                let completedString = completed.charAt(0).toUpperCase() + completed.slice(1);
+                let divDetails = $("<div>", {"class": "details", completed: completedString, style: "border-left-color:" + task.taskColour});
+                divDetails.appendTo(divCell);
+                let pItem = $("<p>").text(" " + task.taskName);
+                pItem.appendTo(divDetails);
+            }
+        }
+        return divRow;
+    }
+    else {
+        let completed = task.completed.toString();
+        let completedString = completed.charAt(0).toUpperCase() + completed.slice(1);
+        let patient = patients.find(p => p.patientID === task.patientID)
+        let divCell = row.children("#"+patient.roomNumber+"");
+        let divDetails = $("<div>", {"class": "details", completed: completedString, style: "border-left-color:" + task.taskColour});
+        divDetails.appendTo(divCell);
+        let pItem = $("<p>").text(" " + task.taskName);
+        pItem.appendTo(divDetails);
+    }
+}
+
+function showGhostTaskNotification(){
+    $("#ghost-task").show();
 }
